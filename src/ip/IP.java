@@ -18,8 +18,7 @@ public class IP implements Comparable<IP> {
     /**
      * contains binary interpretation of IP-Address
      */
-    public final String ipAsBinary;
-    public int ip;
+    private final String ipAsBinary;
 
     /**
      * constructor for IPs.
@@ -48,6 +47,10 @@ public class IP implements Comparable<IP> {
             }
         }
         this.ipAsBinary = ipAsBinary.toString();
+    }
+
+    public String getIpAsBinary() {
+        return ipAsBinary;
     }
 
     @Override

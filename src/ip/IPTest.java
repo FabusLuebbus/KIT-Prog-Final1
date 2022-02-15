@@ -23,7 +23,7 @@ public class IPTest {
 
     @Test
     public void constructorTest() throws ParseException {
-        assertEquals("11010011000000010000000100000001", ip2.ipAsBinary);
+        assertEquals("11010011000000010000000100000001", ip2.getIpAsBinary());
     }
 
     @Test
