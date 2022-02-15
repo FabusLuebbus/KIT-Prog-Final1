@@ -4,6 +4,7 @@ import src.exceptions.ParseException;
 import src.ip.IP;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -26,7 +27,9 @@ public class NetworkCreationTests {
 
         assertEquals("[1.1.1.1, 2.2.2.2, 0.0.0.0]", network.getNodes().toString());
         assertEquals("[(0.0.0.0, 1.1.1.1), (0.0.0.0, 2.2.2.2)]", network.getEdges().toString());
+
     }
+
     @Test(expected = IllegalArgumentException.class)
     public void expectedIllegalArgFirstConst() throws ParseException {
         Network network = new Network(new IP("0.0.0.0"), null);
@@ -37,4 +40,11 @@ public class NetworkCreationTests {
         Network network = new Network(null,  nodeList.get(1));
     }
 
+    @Test
+    public void testGetSmallestBracketPair() throws ParseException {
+        BracketNotationParser parser = new BracketNotationParser();
+        parser.parse("(85.193.148.255 (141.255.1.133 122.117.67.158 0.146.197.108) 34.49.145.239 (231.189.0.127 77.135.84.171 39.20.222.120 252.29.23.0 116.132.83.77))");
+        assertEquals("[85.193.148.255, 141.255.1.133, 122.117.67.158, 0.146.197.108, 34.49.145.239, 231.189.0.127, 77.135.84.171, 39.20.222.120, 252.29.23.0, 116.132.83.77]", parser.getNodes().toString());
+        assertEquals("[(85.193.148.255, 231.189.0.127), (85.193.148.255, 34.49.145.239), (85.193.148.255, 141.255.1.133), (141.255.1.133, 0.146.197.108), (141.255.1.133, 122.117.67.158), (231.189.0.127, 77.135.84.171), (231.189.0.127, 116.132.83.77), (231.189.0.127, 252.29.23.0), (231.189.0.127, 39.20.222.120)]", parser.getEdges().toString());
+    }
 }

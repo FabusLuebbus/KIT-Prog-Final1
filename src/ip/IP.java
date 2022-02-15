@@ -2,6 +2,10 @@ package src.ip;
 
 import src.exceptions.ParseException;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * class to provide functionality regarding IP-Addresses
  *
@@ -20,6 +24,19 @@ public class IP implements Comparable<IP> {
      */
     private final String ipAsBinary;
 
+
+    private Set<IP> adjacentNodes = new HashSet<IP>();
+
+    public boolean addAdjacentNode(IP ip) {
+        return adjacentNodes.add(ip);
+    }
+
+    public boolean addAdjacentNodeCollection(Collection<? extends IP> c) {
+        return adjacentNodes.addAll(c);
+    }
+    public Set<IP> getAdjacentNodes() {
+        return adjacentNodes;
+    }
     /**
      * constructor for IPs.
      * checks if specified IP matches IP_PATTERN.
@@ -33,18 +50,11 @@ public class IP implements Comparable<IP> {
             throw new ParseException("This IP-Address is not valid. It does not match the required pattern");
         }
 
-        String rest = pointNotation;
-        String temp;
+        String[] pointNotationArray = pointNotation.split("\\.");
         StringBuilder ipAsBinary = new StringBuilder();
-        int indexOfFirstPoint;
-        for (int i = 0; i < 4; i++) {
-            indexOfFirstPoint = rest.indexOf('.');
-            temp = rest.substring(0, indexOfFirstPoint);  //interpretation as 8bit binary and concatenation
-            ipAsBinary.append(String.format("%8s", Integer.toBinaryString(Integer.parseInt(temp)))
-                    .replace(' ', '0'));
-            if (i < 2) {
-                rest = rest.substring(++indexOfFirstPoint);
-            }
+
+        for (String s : pointNotationArray) {
+            ipAsBinary.append(String.format("%8s", Integer.toBinaryString(Integer.parseInt(s))).replace(' ', '0'));
         }
         this.ipAsBinary = ipAsBinary.toString();
     }
@@ -61,9 +71,8 @@ public class IP implements Comparable<IP> {
             output.append(Integer.parseInt(temp.substring(0, 8), 2));
             if (i < 3) {
                 output.append('.');
-                temp = temp.substring(8);
             }
-            
+            temp = temp.substring(8);
         }
         return output.toString();
     }
@@ -80,9 +89,15 @@ public class IP implements Comparable<IP> {
 
     @Override
     public boolean equals(Object o) {
-        if (o.getClass() == IP.class) {
-            return compareTo((IP) o) == 0;
+        if (o == null || o.getClass() != IP.class) {
+            return false;
         }
-        return false;
+
+        return compareTo((IP) o) == 0;
+    }
+
+    public boolean equals(String s) throws ParseException {
+        IP helperObject = new IP(s);
+        return (Long.parseLong(helperObject.ipAsBinary, 2) == Long.parseLong(this.ipAsBinary, 2));
     }
 }

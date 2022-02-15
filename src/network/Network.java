@@ -6,21 +6,29 @@ import src.ip.IP;
 import java.util.*;
 
 public class Network {
-    /*hashmap for nodes while boolean variable indicates 'visited'
-    private final Map<Node, Boolean> nodes = new HashMap<Node, Boolean>();
+    /*hashmap for nodes while key is ip in String representation and value contains reference to ip itself
+    */
+    private  Set<IP> nodes = new LinkedHashSet<IP>();
+    private  Set<Edge> edges = new LinkedHashSet<Edge>(); //TODO check if edges set is needed
 
-     */
-    private final Set<IP> nodes = new LinkedHashSet<IP>();
-    private final Set<Edge> edges = new LinkedHashSet<Edge>();
     public Network(final IP root, final List<IP> children) throws ParseException { //alarm wegen änderung der methodensignatur
+
         if (root == null || children == null) { throw new IllegalArgumentException("argument not instantiated."); }
+
         List<IP> childrenCopy = new LinkedList<>();
         for (IP child : children) {
             if (child == null) { throw new IllegalArgumentException("child is not instantiated."); }
             childrenCopy.add(new IP(child.toString()));
         }
+        //ready to start
+        Iterator<IP> iterator = childrenCopy.iterator();
+        while (iterator.hasNext()) {
+            IP ip = iterator.next();
+            nodes.add(ip);
+        }
+        //now all children are properly inserted
 
-        nodes.addAll(childrenCopy);
+        //adding edges TODO check if edges set is needed
         IP[] nodesArray = nodes.toArray(new IP[0]);
         for (IP node : nodesArray) {
             edges.add(new Edge(root, node));
@@ -30,13 +38,23 @@ public class Network {
     }
 
     public Network(final String bracketNotation) throws ParseException {
+        BracketNotationParser parser = new BracketNotationParser();
+        parser.parse(bracketNotation);
+        nodes = parser.getNodes();
+        edges = parser.getEdges();
     }
+    //TODO think about reusing first constructor in 2nd constructor
 
+
+    //TODO following 2 methods are only used in tests!
     public Set<IP> getNodes() {
-        return nodes;
+        return nodes; //TODO think about immutable map here
     }
 
     public Set<Edge> getEdges() {
+        //TODO check if adding would destroy tree
+
+        //TODO add nodes and edges
         return edges;
     }
 

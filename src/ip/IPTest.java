@@ -12,6 +12,7 @@ public class IPTest {
     IP ip22 = new IP("211.1.1.1");
     IP ip3 = new IP("255.255.255.255");
     IP ip33 = new IP("255.255.255.255");
+    IP ip4 = new IP("54.97.43.123");
 
     public IPTest() throws ParseException {
     }
@@ -52,5 +53,6 @@ public class IPTest {
         assertEquals("0.0.0.0", ip1.toString());
         assertEquals("211.1.1.1", ip2.toString());
         assertEquals("255.255.255.255", ip3.toString());
+        assertEquals("54.97.43.123", ip4.toString());
     }
 }
