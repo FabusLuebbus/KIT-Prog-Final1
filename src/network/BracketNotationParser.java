@@ -46,9 +46,10 @@ public class BracketNotationParser {
         //checking for roots
         for (int i = 0; i < inputAsList.size() ; i++) {
             if (inputAsList.get(i).equals("(") && !inputAsList.get(i + 1).equals("(")) {
-                roots.add(new IP(inputAsList.get(i + 1)));
-            }
-            if (inputAsList.get(i).matches(IP_PATTERN)) {
+                IP newRoot = new IP(inputAsList.get(i + 1));
+                roots.add(newRoot);
+                nodes.add(newRoot);
+            } else if (inputAsList.get(i).matches(IP_PATTERN)) {
                 nodes.add(new IP(inputAsList.get(i)));
             }
         }

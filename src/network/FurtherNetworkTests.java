@@ -16,8 +16,17 @@ public class FurtherNetworkTests {
             ips.add(new IP(i + "." + i + "." + i + "." + i));
         }
         Network network = new Network(new IP("0.0.0.0"), ips);
-        //network.getNodes().add(new IP("13.13.13.13"));
+        network.getNodes().add(new IP("13.13.13.13"));
         List<IP> nodes = List.copyOf(network.getNodes());
         assertFalse(network.treeIsValid(nodes));
+    }
+
+    @Test
+    public void ddTest() throws ParseException {
+        Network network = new Network("(0.0.0.0 1.1.1.1 2.2.2.2)");
+        Network subnetFail = new Network("(1.1.1.1 2.2.2.2)");
+        Network subnetSuccess = new Network("(1.1.1.1 3.3.3.3)");
+        assertTrue(network.add(subnetSuccess));
+        assertFalse(network.add(subnetFail));
     }
 }

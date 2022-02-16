@@ -115,6 +115,10 @@ public class IP implements Comparable<IP> {
 
         return compareTo((IP) o) == 0;
     }
+    @Override
+    public int hashCode() {
+        return Integer.parseUnsignedInt(ipAsBinary, 2);
+    }
 
     public boolean equals(String s) throws ParseException {
         IP helperObject = new IP(s);

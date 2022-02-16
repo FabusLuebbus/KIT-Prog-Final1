@@ -11,6 +11,14 @@ public class Edge {
         this.secondNode = secondNode;
     }
 
+    public IP getFirstNode() {
+        return firstNode;
+    }
+
+    public IP getSecondNode() {
+        return secondNode;
+    }
+
     @Override
     public String toString() {
         return "(" + firstNode.toString() + ", " + secondNode.toString() + ")";

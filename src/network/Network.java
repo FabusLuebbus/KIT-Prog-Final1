@@ -44,6 +44,16 @@ public class Network {
         parser.parse(bracketNotation);
         nodes = parser.getNodes();
         edges = parser.getEdges();
+        for (Edge edge : edges) {
+            IP node1 = edge.getFirstNode();
+            IP node2 = edge.getSecondNode();
+            if (nodes.contains(node1)) {
+                node1.addAdjacentNode(node2);
+            }
+            if (nodes.contains(node2)) {
+                node2.addAdjacentNode(node1);
+            }
+        }
     }
     //TODO think about reusing first constructor in 2nd constructor
 
@@ -59,19 +69,30 @@ public class Network {
 
     public boolean add(final Network subnet) {
         //creating temporary Lists (not Sets, but using sets for distinctiveness) of both networks combined to check for legality
-
-
-        /*
-        if (insert condition) {
+        nodes.addAll(subnet.nodes);
+        edges.addAll(subnet.edges);
+        for (Edge edge : edges) {
+            IP node1 = edge.getFirstNode();
+            IP node2 = edge.getSecondNode();
+            if (nodes.contains(node1)) {            //maybe one of those if statements is enough
+                node1.addAdjacentNode(node2);
+            }
+            if (nodes.contains(node2)) {
+                node2.addAdjacentNode(node1);
+            }
+        }
+        List<IP> union = List.copyOf(nodes);
+        if (!treeIsValid(union)) {
             //TODO check if adding would destroy tree
+
             return false;
         }
 
-         */
+
 
         //add nodes and edges, duplicates are avoided automatically because of add implementation in set
-        this.nodes.addAll(subnet.nodes);
-        this.edges.addAll(subnet.edges);
+
+
         return true;
     }
 
@@ -108,35 +129,32 @@ public class Network {
     }
 
     public boolean treeIsValid(List<IP> nodes) {
-        //TODO implement bfs
-        /*TODO during bfs check for closed paths and if there are unvisited nodes after bfs check each of them
+        //implement bfs
+        /*  during bfs check for closed paths and if there are unvisited nodes after bfs. Check each of them
             by using bfs again
          */
-        /*criteria for valid trees:
+        /*  criteria for valid trees:
             - at least 2 connected nodes
-            - no closed paths
-            - only distinct paths
+            - no closed paths / only distinct paths
          */
 
-        //Todo implement queue
+        //implement queue
         Queue<IP> queue = new LinkedList<>();
         Set<IP> visitedNodes = new HashSet<>();
-        //choosing root
+        //choosing root and setting up
         IP root = nodes.get(0);
         queue.add(root);
         root.setVisited(true);
         visitedNodes.add(root);
-        IP current;
 
         while (!queue.isEmpty()) {
-            current = queue.poll();
+            IP current = queue.poll();
             //check for isolated nodes
             if (current.getAdjacentNodes().isEmpty()) {
                 return false;
             }
+            //breadth first search looking for reachability
             for (IP adjacentNode : current.getAdjacentNodes()) {
-                adjacentNode.getVisited();
-                adjacentNode.getParent();
                 if (!adjacentNode.getVisited() && adjacentNode != current.getParent()) {
                     adjacentNode.setVisited(true);
                     visitedNodes.add(adjacentNode);
@@ -152,14 +170,14 @@ public class Network {
         if (visitedNodes.containsAll(nodes)) {
             return true;
         }
-        //transfer all missing nodes into one list and check named list for integrity
+        //transfer all missing nodes into one list
         List<IP> notVisited = new LinkedList<>();
         for (IP node : nodes) {
             if (!visitedNodes.contains(node)) {
                 notVisited.add(node);
             }
         }
-        //start recursion
+        //check list of not visited nodes for integrity using recursion
         return treeIsValid(notVisited);
     }
 }
