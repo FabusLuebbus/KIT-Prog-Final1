@@ -23,7 +23,10 @@ public class IP implements Comparable<IP> {
      * contains binary interpretation of IP-Address
      */
     private final String ipAsBinary;
-
+    //used in BFS not a final variable changes depending on interpretation
+    private IP parent;
+    //used in BFS
+    private boolean visited;
 
     private Set<IP> adjacentNodes = new HashSet<IP>();
 
@@ -37,6 +40,23 @@ public class IP implements Comparable<IP> {
     public Set<IP> getAdjacentNodes() {
         return adjacentNodes;
     }
+
+    public void setVisited(boolean b) {
+        visited = b;
+    }
+
+    public void setParent(IP parent) {
+        this.parent = parent;
+    }
+
+    public boolean getVisited() {
+        return visited;
+    }
+
+    public IP getParent() {
+        return parent;
+    }
+
     /**
      * constructor for IPs.
      * checks if specified IP matches IP_PATTERN.

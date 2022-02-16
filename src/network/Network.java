@@ -25,6 +25,7 @@ public class Network {
         while (iterator.hasNext()) {
             IP ip = iterator.next();
             nodes.add(ip);
+            ip.addAdjacentNode(root);
         }
         //now all children are properly inserted
 
@@ -34,6 +35,7 @@ public class Network {
             edges.add(new Edge(root, node));
         }
         nodes.add(root);
+        root.addAdjacentNodeCollection(childrenCopy);
         //TODO add call to isValidTree Method once implemented
     }
 
@@ -52,14 +54,25 @@ public class Network {
     }
 
     public Set<Edge> getEdges() {
-        //TODO check if adding would destroy tree
-
-        //TODO add nodes and edges
         return edges;
     }
 
     public boolean add(final Network subnet) {
-        return false;
+        //creating temporary Lists (not Sets, but using sets for distinctiveness) of both networks combined to check for legality
+
+
+        /*
+        if (insert condition) {
+            //TODO check if adding would destroy tree
+            return false;
+        }
+
+         */
+
+        //add nodes and edges, duplicates are avoided automatically because of add implementation in set
+        this.nodes.addAll(subnet.nodes);
+        this.edges.addAll(subnet.edges);
+        return true;
     }
 
     public List<IP> list() {
@@ -92,5 +105,61 @@ public class Network {
 
     public String toString(IP root) {
         return null;
+    }
+
+    public boolean treeIsValid(List<IP> nodes) {
+        //TODO implement bfs
+        /*TODO during bfs check for closed paths and if there are unvisited nodes after bfs check each of them
+            by using bfs again
+         */
+        /*criteria for valid trees:
+            - at least 2 connected nodes
+            - no closed paths
+            - only distinct paths
+         */
+
+        //Todo implement queue
+        Queue<IP> queue = new LinkedList<>();
+        Set<IP> visitedNodes = new HashSet<>();
+        //choosing root
+        IP root = nodes.get(0);
+        queue.add(root);
+        root.setVisited(true);
+        visitedNodes.add(root);
+        IP current;
+
+        while (!queue.isEmpty()) {
+            current = queue.poll();
+            //check for isolated nodes
+            if (current.getAdjacentNodes().isEmpty()) {
+                return false;
+            }
+            for (IP adjacentNode : current.getAdjacentNodes()) {
+                adjacentNode.getVisited();
+                adjacentNode.getParent();
+                if (!adjacentNode.getVisited() && adjacentNode != current.getParent()) {
+                    adjacentNode.setVisited(true);
+                    visitedNodes.add(adjacentNode);
+                    adjacentNode.setParent(current);
+                    queue.add(adjacentNode);
+                } else if (adjacentNode.getVisited() && adjacentNode != current.getParent()) {
+                    return false; //checking for double paths / cycles
+                }
+
+            }
+        }
+        //checking if all nodes were reached if not start recursion at left nodes
+        if (visitedNodes.containsAll(nodes)) {
+            return true;
+        }
+        //transfer all missing nodes into one list and check named list for integrity
+        List<IP> notVisited = new LinkedList<>();
+        for (IP node : nodes) {
+            if (!visitedNodes.contains(node)) {
+                notVisited.add(node);
+            }
+        }
+        //start recursion
+        return treeIsValid(notVisited);
     }
 }
