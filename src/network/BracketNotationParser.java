@@ -50,7 +50,8 @@ public class BracketNotationParser {
                 roots.add(newRoot);
                 nodes.add(newRoot);
             } else if (inputAsList.get(i).matches(IP_PATTERN)) {
-                nodes.add(new IP(inputAsList.get(i)));
+                IP newIP = new IP(inputAsList.get(i));
+                nodes.add(newIP);
             }
         }
         //adding all adjacent nodes to roots and checking numbers of brackets
