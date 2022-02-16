@@ -23,4 +23,9 @@ public class Edge {
     public String toString() {
         return "(" + firstNode.toString() + ", " + secondNode.toString() + ")";
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if
+    }
 }

@@ -3,6 +3,7 @@ package src.network;
 import src.exceptions.ParseException;
 import src.ip.IP;
 
+import java.io.IOException;
 import java.util.*;
 
 public class Network {
@@ -40,18 +41,17 @@ public class Network {
     }
 
     public Network(final String bracketNotation) throws ParseException {
-        BracketNotationParser parser = new BracketNotationParser();
-        parser.parse(bracketNotation);
+        AlternateBracketParser parser = new AlternateBracketParser();
+        try {
+            parser.parse(bracketNotation);
+        } catch (IOException e) {
+            throw new ParseException("Not a valid bracket notation");
+        }
         nodes = parser.getNodes();
-        edges = parser.getEdges();
-        for (Edge edge : edges) {
-            IP node1 = edge.getFirstNode();
-            IP node2 = edge.getSecondNode();
-            if (nodes.contains(node1)) {
-                node1.addAdjacentNode(node2);
-            }
-            if (nodes.contains(node2)) {
-                node2.addAdjacentNode(node1);
+        for (IP node : nodes) {
+            for (IP adjacentNode : node.getAdjacentNodes()) {
+                adjacentNode.addAdjacentNode(node);
+                edges.add(new Edge(node, adjacentNode));
             }
         }
     }
@@ -129,6 +129,7 @@ public class Network {
     }
 
     public boolean treeIsValid(List<IP> nodes) {
+        //TODO use marker object in root for other uses
         //implement bfs
         /*  during bfs check for closed paths and if there are unvisited nodes after bfs. Check each of them
             by using bfs again
