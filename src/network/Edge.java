@@ -26,6 +26,15 @@ public class Edge {
 
     @Override
     public boolean equals(Object o) {
-        if
+        if (o == null || o.getClass() != Edge.class) {
+            return false;
+        }
+
+        return (firstNode.equals(((Edge) o).firstNode) && secondNode.equals(((Edge) o).secondNode) || (firstNode.equals(((Edge) o).secondNode) && secondNode.equals(((Edge) o).firstNode)));
+    }
+
+    @Override
+    public int hashCode() {
+        return 7;
     }
 }

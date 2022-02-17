@@ -9,6 +9,7 @@ import java.io.StreamTokenizer;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -28,7 +29,8 @@ public class AlternateBracketParser {
     private boolean firstTime = true;
 
     public Set<IP> getNodes() {
-        return Set.copyOf(nodes);
+
+        return new LinkedHashSet<>(nodes);
     }
 
     private void next() throws IOException {
@@ -74,6 +76,9 @@ public class AlternateBracketParser {
         parseBracketContent();
         match(")");
 
+        if (tokenizer.ttype != StreamTokenizer.TT_EOF) {
+            throw new ParseException("Invalid bracket Notation");
+        }
         return true;
     }
 
@@ -88,19 +93,22 @@ public class AlternateBracketParser {
         roots.add(currentRoot);
         next();
         parseSecondaryBracketContent();
+
     }
 
 
     private void parseSecondaryBracketContent() throws IOException, ParseException {
-        if (lookahead.equals("(")) {
+        while (lookahead !=  null && lookahead.equals("(")) {
             next();
             parseBracketContent();
             match(")");
             roots.remove(nestingDepth);
             nestingDepth--;
-        } else {
-            matchIP();
-            next();
+
+            if (lookahead != null && !lookahead.matches("\\(|\\)")) {
+                matchIP();
+                next();
+            }
         }
         if (lookahead == null) {
             throw new ParseException("Wrong syntax, might check your brackets");
@@ -109,7 +117,7 @@ public class AlternateBracketParser {
     }
 
     private void parseIP() throws IOException, ParseException {
-        if (lookahead != null && !lookahead.equals(")")) {
+        if (lookahead != null && !lookahead.matches("\\(|\\)")) {
             matchIP();
             next();
             parseSecondaryIP();
@@ -117,18 +125,22 @@ public class AlternateBracketParser {
         if (lookahead == null) {
             throw new ParseException("Wrong syntax, might check your brackets");
         }
+
+        
+
     }
 
     private void parseSecondaryIP() throws IOException, ParseException {
+        if (lookahead == null) {
+            throw new ParseException("Wrong syntax, might check your brackets");
+        }
+
         if (lookahead.matches(IP_PATTERN)) {
             parseIP();
         }
 
         if (lookahead.equals("(")) {
             parseSecondaryBracketContent();
-        }
-        if (lookahead == null) {
-            throw new ParseException("Wrong syntax, might check your brackets");
         }
     }
 }

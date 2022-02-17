@@ -117,7 +117,7 @@ public class IP implements Comparable<IP> {
     }
     @Override
     public int hashCode() {
-        return Integer.parseUnsignedInt(ipAsBinary, 2);
+        return 42;
     }
 
     public boolean equals(String s) throws ParseException {

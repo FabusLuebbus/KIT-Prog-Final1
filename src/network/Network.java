@@ -10,7 +10,7 @@ public class Network {
     /*hashmap for nodes while key is ip in String representation and value contains reference to ip itself
     */
     private  Set<IP> nodes = new LinkedHashSet<IP>();
-    private  Set<Edge> edges = new LinkedHashSet<Edge>(); //TODO check if edges set is needed
+    private  Set<Edge> edges = new LinkedHashSet<Edge>();
 
     public Network(final IP root, final List<IP> children) throws ParseException { //alarm wegen änderung der methodensignatur
 
@@ -40,6 +40,7 @@ public class Network {
         //TODO add call to isValidTree Method once implemented
     }
 
+    //TODO avoid double nodes maybe in parser
     public Network(final String bracketNotation) throws ParseException {
         AlternateBracketParser parser = new AlternateBracketParser();
         try {
@@ -51,11 +52,11 @@ public class Network {
         for (IP node : nodes) {
             for (IP adjacentNode : node.getAdjacentNodes()) {
                 adjacentNode.addAdjacentNode(node);
-                edges.add(new Edge(node, adjacentNode));
+                edges.add(new Edge(adjacentNode, node));
             }
         }
     }
-    //TODO think about reusing first constructor in 2nd constructor
+
 
 
     //TODO following 2 methods are only used in tests!
@@ -67,21 +68,58 @@ public class Network {
         return edges;
     }
 
-    public boolean add(final Network subnet) {
+    public boolean add(final Network subnet) throws ParseException {
         //creating temporary Lists (not Sets, but using sets for distinctiveness) of both networks combined to check for legality
-        nodes.addAll(subnet.nodes);
-        edges.addAll(subnet.edges);
-        for (Edge edge : edges) {
+         List<IP> tempNodesList = new ArrayList<>();
+        for (IP node : nodes) {
+             //TODO catch exception
+            if (!tempNodesList.contains(node)) {
+                IP nodeClone = new IP(node.toString());
+                tempNodesList.add(nodeClone);
+            }
+            for (IP adjacentNode : node.getAdjacentNodes()) {
+                if (tempNodesList.contains(adjacentNode)) {
+                    tempNodesList.get(tempNodesList.indexOf(adjacentNode)).addAdjacentNode(tempNodesList.get(tempNodesList.indexOf(node)));
+                } else {
+                    IP adjacentNodeClone = new IP(adjacentNode.toString());
+                    adjacentNodeClone.addAdjacentNode(tempNodesList.get(tempNodesList.indexOf(node)));
+                    tempNodesList.get(tempNodesList.indexOf(node)).addAdjacentNode(adjacentNodeClone);
+                    tempNodesList.add(adjacentNodeClone);
+                }
+            }
+
+        }
+
+        for (IP node : subnet.nodes) {
+            if (tempNodesList.contains(node)) {
+                for (IP adjacentNode : node.getAdjacentNodes()) {
+                    if (tempNodesList.contains(adjacentNode)) {
+                        tempNodesList.get(tempNodesList.indexOf(node)).addAdjacentNode(tempNodesList.get(tempNodesList.indexOf(adjacentNode)));
+                    } else {
+                        tempNodesList.get(tempNodesList.indexOf(node)).addAdjacentNode(adjacentNode);
+                    }
+                }
+            } else {
+                for (IP adjacentNode : node.getAdjacentNodes()) {
+                    adjacentNode.addAdjacentNode(node);
+                    tempNodesList.add(node);
+                }
+
+            }
+
+        }
+        /*for (Edge edge : edges) {
             IP node1 = edge.getFirstNode();
             IP node2 = edge.getSecondNode();
-            if (nodes.contains(node1)) {            //maybe one of those if statements is enough
+            if (nodes.contains(node1) && nodes.contains(node2)) {        //maybe one of those if condition is redundant
                 node1.addAdjacentNode(node2);
-            }
-            if (nodes.contains(node2)) {
                 node2.addAdjacentNode(node1);
             }
+
         }
-        List<IP> union = List.copyOf(nodes);
+
+         */
+        List<IP> union = List.copyOf(tempNodesList);
         if (!treeIsValid(union)) {
             //TODO check if adding would destroy tree
 
@@ -91,9 +129,10 @@ public class Network {
 
 
         //add nodes and edges, duplicates are avoided automatically because of add implementation in set
-
-
-        return true;
+        nodes = new HashSet<>(tempNodesList);
+        edges.addAll(subnet.edges);
+        List<IP> list = new ArrayList<>(nodes);
+        return treeIsValid(list);
     }
 
     public List<IP> list() {
@@ -139,6 +178,10 @@ public class Network {
             - no closed paths / only distinct paths
          */
 
+        for (IP node : nodes) {
+            node.setParent(null);
+            node.setVisited(false);
+        }
         //implement queue
         Queue<IP> queue = new LinkedList<>();
         Set<IP> visitedNodes = new HashSet<>();
@@ -156,14 +199,15 @@ public class Network {
             }
             //breadth first search looking for reachability
             for (IP adjacentNode : current.getAdjacentNodes()) {
-                if (!adjacentNode.getVisited() && adjacentNode != current.getParent()) {
+                if (!adjacentNode.getVisited()) {
                     adjacentNode.setVisited(true);
                     visitedNodes.add(adjacentNode);
                     adjacentNode.setParent(current);
                     queue.add(adjacentNode);
-                } else if (adjacentNode.getVisited() && adjacentNode != current.getParent()) {
+                } else if (adjacentNode.getVisited() && !adjacentNode.equals(current.getParent())) {
                     return false; //checking for double paths / cycles
                 }
+
 
             }
         }
