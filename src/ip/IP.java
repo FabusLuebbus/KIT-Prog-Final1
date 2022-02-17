@@ -24,9 +24,9 @@ public class IP implements Comparable<IP> {
      */
     private final String ipAsBinary;
     //used in BFS not a final variable changes depending on interpretation
-    private IP parent;
+    private IP parent = null;
     //used in BFS
-    private boolean visited;
+    private boolean visited = false;
 
     private Set<IP> adjacentNodes = new HashSet<IP>();
 
@@ -99,9 +99,9 @@ public class IP implements Comparable<IP> {
 
     @Override
     public int compareTo(IP o) {
-        if (Long.parseLong(o.ipAsBinary, 2) > Long.parseLong(this.ipAsBinary, 2)) {
+        if (Long.parseUnsignedLong(o.ipAsBinary, 2) > Long.parseUnsignedLong(this.ipAsBinary, 2)) {
             return -1;
-        } else if (Long.parseLong(o.ipAsBinary, 2) < Long.parseLong(this.ipAsBinary, 2)) {
+        } else if (Long.parseUnsignedLong(o.ipAsBinary, 2) < Long.parseUnsignedLong(this.ipAsBinary, 2)) {
             return 1;
         }
         return 0;
@@ -122,6 +122,6 @@ public class IP implements Comparable<IP> {
 
     public boolean equals(String s) throws ParseException {
         IP helperObject = new IP(s);
-        return (Long.parseLong(helperObject.ipAsBinary, 2) == Long.parseLong(this.ipAsBinary, 2));
+        return (Long.parseUnsignedLong(helperObject.ipAsBinary, 2) == Long.parseUnsignedLong(this.ipAsBinary, 2));
     }
 }

@@ -33,6 +33,26 @@ public class FurtherNetworkTests {
         assertTrue(network1.add(subnetSuccess));
         assertFalse(network2.add(subnetFail));
         assertFalse(network3.add(subnetFail3));
+        for (IP ip : network2.getNodes()) {
+            System.out.print(ip + " | ");
+
+        }
+        System.out.println("");
+        for (IP ip : network2.getNodes()) {
+            System.out.print(System.identityHashCode(ip) + " | ");
+
+        }
+        System.out.println("");
+        for (Edge edge : network2.getEdges()) {
+            System.out.print(edge.getFirstNode());
+            System.out.print(" | ");
+            System.out.print(edge.getSecondNode());
+            System.out.println("");
+            System.out.print(System.identityHashCode(edge.getFirstNode()));
+            System.out.print(" | ");
+            System.out.print(System.identityHashCode(edge.getSecondNode()));
+            System.out.println("");
+        }
     }
     
 
@@ -41,7 +61,7 @@ public class FurtherNetworkTests {
 
     @Test(expected = ParseException.class)
     public void newParserTest() throws IOException, ParseException {
-        AlternateBracketParser parser = new AlternateBracketParser();
+        BracketNotationParser parser = new BracketNotationParser();
         //assertTrue(parser.parse("(0.0.0.0 1.1.1.1)"));
         //assertTrue(parser.parse("(0.0.0.0 (1.1.1.1 2.2.2.2))"));
         //assertTrue(parser.parse("(122.117.67.158 (141.255.1.133 0.146.197.108))"));
