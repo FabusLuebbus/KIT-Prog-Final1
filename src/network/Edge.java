@@ -26,11 +26,12 @@ public class Edge {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || !(o instanceof Edge)) {
+        if (!(o instanceof Edge)) {
             return false;
         }
 
-        return (firstNode.equals(((Edge) o).firstNode) && secondNode.equals(((Edge) o).secondNode) || (firstNode.equals(((Edge) o).secondNode) && secondNode.equals(((Edge) o).firstNode)));
+        return (firstNode.equals(((Edge) o).firstNode) && secondNode.equals(((Edge) o).secondNode)
+                || (firstNode.equals(((Edge) o).secondNode) && secondNode.equals(((Edge) o).firstNode)));
     }
 
     @Override

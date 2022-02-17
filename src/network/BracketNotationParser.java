@@ -60,11 +60,13 @@ public class BracketNotationParser {
         }
     }
 
-    private void matchIP() throws IOException, ParseException {
+    private void matchIP() throws ParseException {
+        //checking for invalid IP-syntax / double entries
         if (!lookahead.matches(IP_PATTERN) || addedIPs.contains(lookahead)) {
             throw new ParseException("Invalid bracket notation (check number of IPs, brackets, "
                     + "Ip-syntax and look for double entries)");
         } else {
+            //creating new node from IP and adding it to nodes, adding its production root as adjacent node if existent
             IP node = new IP(lookahead);
             if (roots.size() > nestingDepth) {
                 node.addAdjacentNode(roots.get(nestingDepth));
@@ -84,16 +86,15 @@ public class BracketNotationParser {
      *      - after ')' the current token must be TT_EOF(token type indicating end of input stream is reached)
      *
      * @param bracketNotation input string containing supposed network topology
-     * @return true is successfully parsed, false if not
      * @throws IOException when a {@link StreamTokenizer} action fails
      * @throws ParseException when syntax is broken
      */
-    public boolean parse(String bracketNotation) throws IOException, ParseException {
+    public void parse(String bracketNotation) throws IOException, ParseException {
         /*initial checks on string with 17 being minimal length for valid bracket notations ((X.X.X.X X.X.X.X) -> 7+7+3)
         checking for multiple whitespace since they are to be removed when tokenizing string
         which makes such checks impossible.
          */
-        if (bracketNotation.matches(".*\\*.*|.*\\+.*|.*,.*|.*-.*|.*/.*|.* {2}.*") || bracketNotation.length() < 17) {
+        if (bracketNotation.matches(".* {2}.*") || bracketNotation.length() < 17) {
             throw new ParseException("This is not a valid bracket notation");
         }
         //replacing '(' with '( ' and ')' with ' )' so brackets will be independent tokens as well as IPs
@@ -113,9 +114,11 @@ public class BracketNotationParser {
         if (tokenizer.ttype != StreamTokenizer.TT_EOF) {
             throw new ParseException("Invalid bracket Notation");
         }
-        return true;
     }
 
+    /*
+    following methods simply represent the base grammar's productions
+     */
     private void parseBracketContent() throws IOException, ParseException {
         matchIP();
         if (firstTime) {
@@ -138,7 +141,7 @@ public class BracketNotationParser {
             roots.remove(nestingDepth);
             nestingDepth--;
 
-            if (lookahead != null && !lookahead.matches("\\(|\\)")) {
+            if (lookahead != null && !lookahead.matches("[()]")) {
                 matchIP();
                 next();
             }
@@ -150,7 +153,7 @@ public class BracketNotationParser {
     }
 
     private void parseIP() throws IOException, ParseException {
-        if (lookahead != null && !lookahead.matches("\\(|\\)")) {
+        if (lookahead != null && !lookahead.matches("[()]")) {
             matchIP();
             next();
             parseSecondaryIP();

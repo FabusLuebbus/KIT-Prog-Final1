@@ -19,43 +19,12 @@ public class IP implements Comparable<IP> {
     public static final String IP_PATTERN = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])"
             + "(\\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])){3})$";
 
-    /**
-     * contains binary interpretation of IP-Address
-     */
     private final String ipAsBinary;
     //used in BFS not a final variable changes depending on interpretation
     private IP parent = null;
     //used in BFS
     private boolean visited = false;
-
     private Set<IP> adjacentNodes = new HashSet<IP>();
-
-    public boolean addAdjacentNode(IP ip) {
-        return adjacentNodes.add(ip);
-    }
-
-    public boolean addAdjacentNodeCollection(Collection<? extends IP> c) {
-        return adjacentNodes.addAll(c);
-    }
-    public Set<IP> getAdjacentNodes() {
-        return adjacentNodes;
-    }
-
-    public void setVisited(boolean b) {
-        visited = b;
-    }
-
-    public void setParent(IP parent) {
-        this.parent = parent;
-    }
-
-    public boolean getVisited() {
-        return visited;
-    }
-
-    public IP getParent() {
-        return parent;
-    }
 
     /**
      * constructor for IPs.
@@ -79,6 +48,75 @@ public class IP implements Comparable<IP> {
         this.ipAsBinary = ipAsBinary.toString();
     }
 
+    /**
+     * adds given IP to Set of adjacent nodes
+     *
+     * @param ip IP to be added to adjacent nodes
+     */
+    public void addAdjacentNode(IP ip) {
+        adjacentNodes.add(ip);
+    }
+
+    /**
+     * adds all elements of given collection containing IPs to adjacentNodes Set
+     *
+     * @param coll collection containing all elements to be added
+     */
+    public void addAdjacentNodeCollection(Collection<? extends IP> coll) {
+        adjacentNodes.addAll(coll);
+    }
+
+    /**
+     * getter method for adjacent nodes
+     *
+     * @return reference to this.adjacentNodes (no deep copy)
+     */
+    public Set<IP> getAdjacentNodes() {
+        return adjacentNodes;
+    }
+
+    /**
+     * setter method for visited parameter used in breadth searching algorithms
+     *
+     * @param b true is visited, false if not
+     */
+    public void setVisited(boolean b) {
+        visited = b;
+    }
+
+
+    /**
+     * setter method for parent variable used in breadth searching algorithms
+     *
+     * @param parent IP from which this IP was reached
+     */
+    public void setParent(IP parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * getter method for visited parameter
+     *
+     * @return true if visited, false if not
+     */
+    public boolean getVisited() {
+        return visited;
+    }
+
+    /**
+     * getter method for parent variable
+     *
+     * @return IP from which this IP was reached during searching algorithm
+     */
+    public IP getParent() {
+        return parent;
+    }
+
+    /**
+     * getter method for binary interpretation (without '.') of ip as string
+     *
+     * @return binary interpretation
+     */
     public String getIpAsBinary() {
         return ipAsBinary;
     }
@@ -109,12 +147,13 @@ public class IP implements Comparable<IP> {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || !(o instanceof IP)) {
+        if (!(o instanceof IP)) {
             return false;
         }
 
         return compareTo((IP) o) == 0;
     }
+
     @Override
     public int hashCode() {
         return 42;

@@ -25,7 +25,7 @@ public class FurtherNetworkTests {
     public void addTest() throws ParseException {
         Network network1 = new Network("(0.0.0.0 1.1.1.1 2.2.2.2)");
         Network network2 = new Network("(0.0.0.0 1.1.1.1 2.2.2.2)");
-        Network network3 = new Network("(85.193.148.255 (141.255.1.133 + 122.117.67.158 0.146.197.108) 34.49.145.239 (231.189.0.127 77.135.84.171 39.20.222.120 252.29.23.0 116.132.83.77))");
+        Network network3 = new Network("(85.193.148.255 (141.255.1.133 122.117.67.158 0.146.197.108) 34.49.145.239 (231.189.0.127 77.135.84.171 39.20.222.120 252.29.23.0 116.132.83.77))");
         Network subnetFail = new Network("(1.1.1.1 2.2.2.2)");
         Network subnetSuccess = new Network("(1.1.1.1 3.3.3.3)");
         Network subnetFail3 = new Network("(0.146.197.108 34.49.145.239)");
