@@ -2,19 +2,41 @@ package src.network;
 
 import src.ip.IP;
 
+/**
+ * class to interpret to adjacent nodes as one edge
+ *
+ * @author usmsk
+ * @version 1.0
+ */
 public class Edge {
-    private IP firstNode;
-    private IP secondNode;
+    private final IP firstNode;
+    private final IP secondNode;
 
+    /**
+     * constructor creating edge from to given nodes (IPs)
+     *
+     * @param firstNode first IP
+     * @param secondNode second IP
+     */
     public Edge(IP firstNode, IP secondNode) {
         this.firstNode = firstNode;
         this.secondNode = secondNode;
     }
 
+    /**
+     * getter method for first node
+     *
+     * @return first node (IP)
+     */
     public IP getFirstNode() {
         return firstNode;
     }
 
+    /**
+     * getter method for second node
+     *
+     * @return second node (IP)
+     */
     public IP getSecondNode() {
         return secondNode;
     }
@@ -36,6 +58,6 @@ public class Edge {
 
     @Override
     public int hashCode() {
-        return 7;
+        return 42;
     }
 }

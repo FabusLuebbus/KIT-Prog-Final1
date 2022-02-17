@@ -24,7 +24,7 @@ public class IP implements Comparable<IP> {
     private IP parent = null;
     //used in BFS
     private boolean visited = false;
-    private Set<IP> adjacentNodes = new HashSet<IP>();
+    private Set<IP> adjacentNodes = new HashSet<>();
 
     /**
      * constructor for IPs.
@@ -157,10 +157,5 @@ public class IP implements Comparable<IP> {
     @Override
     public int hashCode() {
         return 42;
-    }
-
-    public boolean equals(String s) throws ParseException {
-        IP helperObject = new IP(s);
-        return (Long.parseUnsignedLong(helperObject.ipAsBinary, 2) == Long.parseUnsignedLong(this.ipAsBinary, 2));
     }
 }
