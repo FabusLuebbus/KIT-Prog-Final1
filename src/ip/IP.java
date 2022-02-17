@@ -109,7 +109,7 @@ public class IP implements Comparable<IP> {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || o.getClass() != IP.class) {
+        if (o == null || !(o instanceof IP)) {
             return false;
         }
 

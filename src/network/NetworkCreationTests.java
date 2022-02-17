@@ -10,7 +10,6 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-
 public class NetworkCreationTests {
     IP root = new IP("0.0.0.0");
     IP child1 = new IP("1.1.1.1");
@@ -22,7 +21,7 @@ public class NetworkCreationTests {
 
 
     @Test
-    public void TestFirstConstructor() throws ParseException {
+    public void testFirstConstructor() throws ParseException {
         Network network = new Network(root, nodeList.get(1));
 
         assertEquals("[1.1.1.1, 2.2.2.2, 0.0.0.0]", network.getNodes().toString());

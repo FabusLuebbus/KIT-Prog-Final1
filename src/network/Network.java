@@ -10,6 +10,12 @@ public class Network {
     private  Set<IP> nodes = new LinkedHashSet<>();
     private  Set<Edge> edges = new LinkedHashSet<>();
 
+    /**
+     * generates a network of height 1. links all children to root and the other way round
+     *
+     * @param root is the node (IP) all children are adjacent to
+     * @param children is a List of nodes (IPs) containing all nodes directly adjacent to root
+     */
     public Network(final IP root, final List<IP> children) {
 
         if (root == null || children == null) { throw new IllegalArgumentException("argument not instantiated."); }
@@ -43,11 +49,19 @@ public class Network {
         nodes.add(root);
         root.addAdjacentNodeCollection(childrenCopy);
         //check if tree is valid
-        if (!treeIsValid(List.copyOf(nodes))) {
+        if (!networkIsValid(List.copyOf(nodes))) {
             throw new IllegalArgumentException("Not a valid tree topology");
         }
     }
-    
+
+    /**
+     * creates new Network from bracket notation. Uses {@link BracketNotationParser} to parse input.
+     * Then retrieves nodes from parser and creates edges accordingly
+     *
+     *
+     * @param bracketNotation input string containing structure of new network
+     * @throws ParseException if parser fails to parse input
+     */
     public Network(final String bracketNotation) throws ParseException {
         //trying to parse bracketNotation
         BracketNotationParser parser = new BracketNotationParser();
@@ -69,8 +83,6 @@ public class Network {
         }
     }
 
-
-
     //TODO following 2 methods are only used in tests!
     public Set<IP> getNodes() {
         return nodes; //TODO think about immutable map here
@@ -80,39 +92,31 @@ public class Network {
         return edges;
     }
 
-    public boolean add(final Network subnet) throws ParseException {
-
+    /**
+     * Tries to add new subnet to this Network. Checks validity of new Network using {@link #networkIsValid(List)}.
+     * If new network is not valid no changes are made on this Network
+     *
+     * @param subnet the network to be added to this network
+     * @return  whether the network was succesfully changed
+     */
+    public boolean add(final Network subnet) {
         //creating temporary nodes list to simulate adding of subnet
-        //TODO if used again extract to copyNodes()
-        List<IP> tempNodesList = new ArrayList<>();
-        for (IP node : nodes) {
-            try {
-
-                if (!tempNodesList.contains(node)) {
-                    IP nodeClone = new IP(node.toString());
-                    tempNodesList.add(nodeClone);
-                }
-                //making sure to reference clone in List
-                IP nodeCloneInList = getIPFromList(node, tempNodesList);
-                //iterating over original node's adjacency list to provide copy as adjacency list to clones
-                for (IP adjacentNode : node.getAdjacentNodes()) {
-                    if (tempNodesList.contains(adjacentNode)) {
-                        getIPFromList(adjacentNode, tempNodesList).addAdjacentNode(nodeCloneInList);
-                    } else {
-                        IP adjClone = new IP(adjacentNode.toString());
-                        adjClone.addAdjacentNode(nodeCloneInList);
-                        nodeCloneInList.addAdjacentNode(adjClone);
-                        tempNodesList.add(adjClone);
-                    }
-                }
-
-            } catch (ParseException e) {
-                return false;
-            }
+        List<IP> tempNodesList;
+        try {
+            tempNodesList = deepCopy(nodes);
+        } catch (ParseException | IllegalArgumentException e) {
+            return false;
+        }
+        // create deep copy list of subnet.nodes
+        List<IP> subnetNodes;
+        try {
+            subnetNodes = deepCopy(subnet.nodes);
+        } catch (ParseException | IllegalArgumentException e) {
+            return false;
         }
         //current state: created temporary testing list of nodes
         //following: add subnet nodes
-        for (IP subNode : subnet.nodes) {
+        for (IP subNode : subnetNodes) {
             if (tempNodesList.contains(subNode)) {
                 for (IP subAdjNode : subNode.getAdjacentNodes()) {
                     if (tempNodesList.contains(subAdjNode)) {
@@ -143,21 +147,15 @@ public class Network {
                         tempNodesList.add(subNode);
                         tempNodesList.add(subAdjNode);
                     }
-
                 }
-
             }
-
         }
         //check if adding would destroy tree
-        if (!treeIsValid(tempNodesList)) {
+        if (!networkIsValid(tempNodesList)) {
             return false;
         }
-
-
-
         //add nodes and edges, duplicates are avoided automatically because of add implementation in set
-        nodes = new HashSet<>(tempNodesList);
+        nodes = new LinkedHashSet<>(tempNodesList);
         //clear edges and generate new edges based on new nodes
         edges.clear();
         for (IP node : nodes) {
@@ -200,18 +198,34 @@ public class Network {
         return null;
     }
 
-    public boolean treeIsValid(List<IP> nodes) {
-        //TODO put in bfs class
-        //TODO use marker object in root for other uses
-        //implement bfs
-        /*  during bfs check for closed paths and if there are unvisited nodes after bfs. Check each of them
-            by using bfs again
-         */
-        /*  criteria for valid trees:
-            - at least 2 connected nodes
-            - no closed paths / only distinct paths
-         */
+    //TODO use marker object in root for other uses
 
+    /**
+     *  checks a network for validity. A network is considered invalid if one of the following states appears:
+     *          - one of the nodes has no adjacent node
+     *          - there are cyclic routes / 2 different routes from one node to another
+     *
+     *  The network is evaluated using an implementation of breadth first search following these steps:
+     *          - set all node's parent to null and visited parameter to false
+     *          - find random node to begin with (root) and set visited to true
+     *       -> - add all adjacent nodes to queue and set their parent to current node / visited to true
+     * loop |   - add all adjacent nodes to seperate visitedNodes Set
+     *       -- - get new current node from queue
+     *
+     *  the last 3 steps are repeated until queue is empty or:
+     *          - one node has 0 adjacent nodes (return false)
+     *          - if one of current node's adjacent nodes is visited but not current node's parent (return false)
+     *          
+     *  if the algorithm was not interrupted and queue is empty visitedNodes Set is compared to nodes List.
+     *  If all nodes were visited return true, else create List of missing nodes and
+     *  call networkIsValid on missing nodes.
+     *  Repeat recursion until return true
+     *
+     * @param nodes List of nodes to be evaluated
+     * @return whether nodes represents a valid network
+     */
+    public boolean networkIsValid(List<IP> nodes) {
+        //reset parameters of nodes
         for (IP node : nodes) {
             node.setParent(null);
             node.setVisited(false);
@@ -219,19 +233,19 @@ public class Network {
         //implement queue
         Queue<IP> queue = new LinkedList<>();
         Set<IP> visitedNodes = new HashSet<>();
-        //choosing root and setting up
+        //getting random root and setting up
         IP root = nodes.get(0);
         queue.add(root);
         root.setVisited(true);
         visitedNodes.add(root);
-
+        //main loop
         while (!queue.isEmpty()) {
             IP current = queue.poll();
             //check for isolated nodes
             if (current.getAdjacentNodes().isEmpty()) {
                 return false;
             }
-            //breadth first search looking for reachability
+            //mark all adjacent nodes and add them to queue
             for (IP adjacentNode : current.getAdjacentNodes()) {
                 if (!adjacentNode.getVisited()) {
                     adjacentNode.setVisited(true);
@@ -241,11 +255,9 @@ public class Network {
                 } else if (adjacentNode.getVisited() && !adjacentNode.equals(current.getParent())) {
                     return false; //checking for double paths / cycles
                 }
-
-
             }
         }
-        //checking if all nodes were reached if not start recursion at left nodes
+        //checking if all nodes were reached if not start recursion at missing nodes
         if (visitedNodes.containsAll(nodes)) {
             return true;
         }
@@ -257,10 +269,37 @@ public class Network {
             }
         }
         //check list of not visited nodes for integrity using recursion
-        return treeIsValid(notVisited);
+        return networkIsValid(notVisited);
     }
 
     private static IP getIPFromList(IP ip, List<IP> list) {
         return list.get(list.indexOf(ip));
+    }
+
+    private static List<IP> deepCopy(Collection<IP> nodes) throws ParseException {
+        if (nodes instanceof Map) {
+            throw new IllegalArgumentException();
+        }
+        List<IP> nodesCopy = new ArrayList<>();
+        for (IP node : nodes) {
+            if (!nodesCopy.contains(node)) {
+                IP nodeClone = new IP(node.toString());
+                nodesCopy.add(nodeClone);
+            }
+            //making sure to reference clone in List
+            IP nodeCloneInList = getIPFromList(node, nodesCopy);
+            //iterating over original node's adjacency list to provide copy as adjacency list to clones
+            for (IP adjacentNode : node.getAdjacentNodes()) {
+                if (nodesCopy.contains(adjacentNode)) {
+                    getIPFromList(adjacentNode, nodesCopy).addAdjacentNode(nodeCloneInList);
+                } else {
+                    IP adjClone = new IP(adjacentNode.toString());
+                    adjClone.addAdjacentNode(nodeCloneInList);
+                    nodeCloneInList.addAdjacentNode(adjClone);
+                    nodesCopy.add(adjClone);
+                }
+            }
+        }
+        return nodesCopy;
     }
 }

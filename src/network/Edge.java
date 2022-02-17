@@ -26,7 +26,7 @@ public class Edge {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || o.getClass() != Edge.class) {
+        if (o == null || !(o instanceof Edge)) {
             return false;
         }
 
