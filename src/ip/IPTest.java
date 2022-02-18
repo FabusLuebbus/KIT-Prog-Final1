@@ -24,7 +24,7 @@ public class IPTest {
 
     @Test
     public void constructorTest() throws ParseException {
-        assertEquals("11010011000000010000000100000001", ip2.getIpAsBinary());
+        assertEquals(3540058369L, ip2.getIpValue());
     }
 
     @Test
@@ -51,6 +51,7 @@ public class IPTest {
     @Test
     public void toStringTest() throws ParseException {
         assertEquals("0.0.0.0", ip1.toString());
+        assertEquals("0.255.0.255", new IP("0.255.0.255").toString());
         assertEquals("211.1.1.1", ip2.toString());
         assertEquals("255.255.255.255", ip3.toString());
         assertEquals("54.97.43.123", ip4.toString());

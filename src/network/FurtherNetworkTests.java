@@ -102,4 +102,12 @@ parser.parse("  ");
         System.out.println(network.getEdges().toString());
         System.out.println(network.getEdges().size());
     }
+
+    @Test
+    public void sortTest() throws ParseException {
+        Network network = new Network("(85.193.148.255 (141.255.1.133 122.117.67.158 0.146.197.108) 34.49.145.239 (231.189.0.127 77.135.84.171 39.20.222.120 252.29.23.0 116.132.83.77))");
+        for (IP node : network.list()) {
+            System.out.println(node.toString());
+        }
+    }
 }

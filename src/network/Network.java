@@ -166,8 +166,15 @@ public class Network {
         return true;
     }
 
+    /**
+     * returns sorted list of nodes using Collections.sort() which sorts the list in relation to the node's IP-values
+     *
+     * @return sorted nodes list
+     */
     public List<IP> list() {
-        return null;
+        List<IP> sortedNodes = new ArrayList<>(nodes);
+        Collections.sort(sortedNodes);
+        return sortedNodes;
     }
 
     public boolean connect(final IP ip1, final IP ip2) {
@@ -277,10 +284,7 @@ public class Network {
     }
 
     private static List<IP> deepCopy(Collection<IP> nodes) throws ParseException {
-        if (nodes instanceof Map) {
-            throw new IllegalArgumentException();
-        }
-        List<IP> nodesCopy = new ArrayList<>();
+        List<IP> nodesCopy = new LinkedList<>();
         for (IP node : nodes) {
             if (!nodesCopy.contains(node)) {
                 IP nodeClone = new IP(node.toString());

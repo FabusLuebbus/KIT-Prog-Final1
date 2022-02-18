@@ -19,7 +19,7 @@ public class IP implements Comparable<IP> {
     public static final String IP_PATTERN = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])"
             + "(\\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])){3})$";
 
-    private final String ipAsBinary;
+    private final long ipValue;
     //used in BFS not a final variable changes depending on interpretation
     private IP parent = null;
     //used in BFS
@@ -43,9 +43,9 @@ public class IP implements Comparable<IP> {
         StringBuilder ipAsBinary = new StringBuilder();
 
         for (String s : pointNotationArray) {
-            ipAsBinary.append(String.format("%8s", Integer.toBinaryString(Integer.parseInt(s))).replace(' ', '0'));
+            ipAsBinary.append(String.format("%8s", Long.toBinaryString(Long.parseLong(s))).replace(' ', '0'));
         }
-        this.ipAsBinary = ipAsBinary.toString();
+        ipValue = Long.parseLong(ipAsBinary.toString(), 2);
     }
 
     /**
@@ -117,16 +117,17 @@ public class IP implements Comparable<IP> {
      *
      * @return binary interpretation
      */
-    public String getIpAsBinary() {
-        return ipAsBinary;
+    public long getIpValue() {
+        return ipValue;
     }
 
     @Override
     public String toString() {
-        String temp = ipAsBinary;
+        String temp = Long.toBinaryString(ipValue);
+        temp = String.format("%32s", temp).replace(' ', '0');
         StringBuilder output = new StringBuilder();
         for (int i = 0; i < 4; i++) {
-            output.append(Integer.parseInt(temp.substring(0, 8), 2));
+            output.append(Long.parseLong(temp.substring(0, 8), 2));
             if (i < 3) {
                 output.append('.');
             }
@@ -137,9 +138,9 @@ public class IP implements Comparable<IP> {
 
     @Override
     public int compareTo(IP o) {
-        if (Long.parseUnsignedLong(o.ipAsBinary, 2) > Long.parseUnsignedLong(this.ipAsBinary, 2)) {
+        if (o.ipValue > ipValue) {
             return -1;
-        } else if (Long.parseUnsignedLong(o.ipAsBinary, 2) < Long.parseUnsignedLong(this.ipAsBinary, 2)) {
+        } else if (o.ipValue < ipValue) {
             return 1;
         }
         return 0;
