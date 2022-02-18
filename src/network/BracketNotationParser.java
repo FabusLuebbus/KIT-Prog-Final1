@@ -94,7 +94,7 @@ public class BracketNotationParser {
         checking for multiple whitespace since they are to be removed when tokenizing string
         which makes such checks impossible.
          */
-        if (bracketNotation.matches(".* {2}.*") || bracketNotation.length() < 17) {
+        if (bracketNotation.matches(".* {2}.*|.*\\( .*|.* \\).*") || bracketNotation.length() < 17) {
             throw new ParseException("This is not a valid bracket notation");
         }
         //replacing '(' with '( ' and ')' with ' )' so brackets will be independent tokens as well as IPs

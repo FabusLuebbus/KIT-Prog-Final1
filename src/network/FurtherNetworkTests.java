@@ -105,9 +105,10 @@ parser.parse("  ");
 
     @Test
     public void sortTest() throws ParseException {
-        Network network = new Network("(85.193.148.255 (141.255.1.133 122.117.67.158 0.146.197.108) 34.49.145.239 (231.189.0.127 77.135.84.171 39.20.222.120 252.29.23.0 116.132.83.77))");
-        for (IP node : network.list()) {
-            System.out.println(node.toString());
+        Network network = new Network("(85.193.148.255 (141.255.1.133 122.117.67.158 0.146.197.108) 34.49.145.239 (231.189.0.127 77.135.84.171 39.20.222.120 252.29.23.0 116.132.83.77) 9.9.9.9 8.8.8.8 7.7.7.7 6.6.6.6 5.5.5.5 1.1.1.1 4.4.4.4 3.3.3.3 2.2.2.2)");
+        List<IP> list = network.list();
+        for (int i = 0; i < list.size() - 1; i++) {
+            assertTrue(list.get(i).getIpValue() < list.get(i + 1).getIpValue());
         }
     }
 }
