@@ -8,7 +8,6 @@ import java.util.*;
 
 public class Network {
     private  Set<IP> nodes = new LinkedHashSet<>();
-    private  Set<Edge> edges = new LinkedHashSet<>();
 
     /**
      * generates a network of height 1. links all children to root and the other way round
@@ -41,11 +40,6 @@ public class Network {
             nodes.add(child);
             child.addAdjacentNode(root);
         }
-        //adding edges
-        for (IP child : childrenCopy) {
-            edges.add(new Edge(root, child));
-        }
-        //add root last so iterations over nodes make sense
         nodes.add(root);
         root.addAdjacentNodeCollection(childrenCopy);
         //check if tree is valid
@@ -78,7 +72,6 @@ public class Network {
         for (IP node : nodes) {
             for (IP adjacentNode : node.getAdjacentNodes()) {
                 adjacentNode.addAdjacentNode(node);
-                edges.add(new Edge(adjacentNode, node));
             }
         }
     }
@@ -86,10 +79,6 @@ public class Network {
     //TODO following 2 methods are only used in tests!
     public Set<IP> getNodes() {
         return nodes; //TODO think about immutable map here
-    }
-
-    public Set<Edge> getEdges() {
-        return edges;
     }
 
     /**
@@ -157,12 +146,6 @@ public class Network {
         //add nodes and edges, duplicates are avoided automatically because of add implementation in set
         nodes = new LinkedHashSet<>(tempNodesList);
         //clear edges and generate new edges based on new nodes
-        edges.clear();
-        for (IP node : nodes) {
-            for (IP adjNode : node.getAdjacentNodes()) {
-                edges.add(new Edge(node, adjNode));
-            }
-        }
         return true;
     }
 
@@ -178,6 +161,9 @@ public class Network {
     }
 
     public boolean connect(final IP ip1, final IP ip2) {
+        List<IP> currentNodes = new ArrayList<>(nodes);
+        getIPFromList(ip1, currentNodes).addAdjacentNode(getIPFromList(ip2, currentNodes));
+        getIPFromList(ip2, currentNodes).addAdjacentNode(getIPFromList(ip1, currentNodes));
         return false;
     }
 

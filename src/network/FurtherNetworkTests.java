@@ -15,7 +15,6 @@ public class FurtherNetworkTests {
     public void bfsTest() throws ParseException {
         List<IP> ips = new LinkedList<>();
         Network network = new Network("(0.0.0.0 1.1.1.1 2.2.2.2)");
-        network.getEdges().add(new Edge(new IP("1.1.1.1"), new IP("2.2.2.2")));
         network.getNodes().add(new IP("13.13.13.13"));
         List<IP> nodes = List.copyOf(network.getNodes());
         assertFalse(network.networkIsValid(nodes));
@@ -44,20 +43,8 @@ public class FurtherNetworkTests {
 
         }
         System.out.println("");
-        for (Edge edge : network2.getEdges()) {
-            System.out.print(edge.getFirstNode());
-            System.out.print(" | ");
-            System.out.print(edge.getSecondNode());
-            System.out.println("");
-            System.out.print(System.identityHashCode(edge.getFirstNode()));
-            System.out.print(" | ");
-            System.out.print(System.identityHashCode(edge.getSecondNode()));
-            System.out.println("");
-        }
+
     }
-    
-
-
 
 
     @Test(expected = ParseException.class)
@@ -88,6 +75,7 @@ parser.parse("  ");
             System.out.println(node.getAdjacentNodes().toString());
         }
     }
+
     @Test
     public void bracketNetworkConstructorTest() throws ParseException {
         //Network network = new Network("(85.193.148.255 (141.255.1.133 122.117.67.158 0.146.197.108) 34.49.145.239 (231.189.0.127 77.135.84.171 39.20.222.120 252.29.23.0 116.132.83.77))");
@@ -99,8 +87,6 @@ parser.parse("  ");
             }
             System.out.println("");
         }
-        System.out.println(network.getEdges().toString());
-        System.out.println(network.getEdges().size());
     }
 
     @Test
@@ -111,4 +97,11 @@ parser.parse("  ");
             assertTrue(list.get(i).getIpValue() < list.get(i + 1).getIpValue());
         }
     }
+
+    @Test
+    public void connectTest() throws ParseException {
+        Network network1 = new Network("(0.0.0.0 1.1.1.1 2.2.2.2)");
+        network1.connect(new IP("1.1.1.1"),  new IP("2.2.2.2"));
+    }
+
 }
