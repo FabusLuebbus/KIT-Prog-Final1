@@ -3,6 +3,7 @@ package src.network;
 import src.exceptions.ParseException;
 import src.ip.IP;
 import src.parsing.BracketNotationParser;
+import src.printing.BracketNotationPrinter;
 
 import java.io.IOException;
 import java.util.*;
@@ -318,7 +319,6 @@ public class Network {
         //implement queue
         Queue<IP> queue = new LinkedList<>();
         List<IP> output = new LinkedList<>();
-        //getting random root and setting up
         IP root = getIPFromList(start, List.copyOf(nodes));
         queue.add(root);
         root.setVisited(true);
@@ -360,9 +360,13 @@ public class Network {
     }
 
     public String toString(IP root) {
-
-    return  null;
+        IP thisRoot = getIPFromList(root, List.copyOf(nodes));
+        BracketNotationPrinter printer = new BracketNotationPrinter();
+        printer.print(getLevelsUnsorted(thisRoot));
+        return printer.getBracketNotation();
     }
+
+
     
 
     /**
