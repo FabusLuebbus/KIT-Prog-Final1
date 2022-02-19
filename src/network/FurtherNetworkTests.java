@@ -2,6 +2,7 @@ package src.network;
 import org.junit.*;
 import src.exceptions.ParseException;
 import src.ip.IP;
+import src.parsing.BracketNotationParser;
 
 import java.io.IOException;
 import java.util.LinkedList;
