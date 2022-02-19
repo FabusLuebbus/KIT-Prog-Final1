@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.List;
 
 public class BracketNotationPrinter {
-    private List<List<IP>> levels;
     private List<IP> upperTree;
     private List<Object> output = new ArrayList<>();
     private StringBuilder s = new StringBuilder();
@@ -21,7 +20,6 @@ public class BracketNotationPrinter {
     }
 
     public void print(List<List<IP>> levels) {
-        this.levels = levels;
         upperTree = levels.get(0);
         output.add(upperTree.get(0));
         List<IP> adjNodes = new ArrayList<>(upperTree.get(0).getAdjacentNodes());
