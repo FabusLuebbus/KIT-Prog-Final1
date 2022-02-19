@@ -58,7 +58,7 @@ public class Network {
      */
     public Network(final String bracketNotation) throws ParseException {
         //trying to parse bracketNotation
-        BracketNotationParser parser = new BracketNotationParser();
+        BracketNotationParser parser = new BracketNotationParser(); //TODO remove alternate from name once sure its working
         try {
             parser.parse(bracketNotation);
         } catch (IOException e) {
@@ -161,22 +161,87 @@ public class Network {
     }
 
     public boolean connect(final IP ip1, final IP ip2) {
-        List<IP> currentNodes = new ArrayList<>(nodes);
-        getIPFromList(ip1, currentNodes).addAdjacentNode(getIPFromList(ip2, currentNodes));
-        getIPFromList(ip2, currentNodes).addAdjacentNode(getIPFromList(ip1, currentNodes));
+        if (ip1 != null && ip2 != null && !ip1.equals(ip2) && nodes.contains(ip1) && nodes.contains(ip2)) {
+            List<IP> currentNodes = new ArrayList<>(nodes);
+            getIPFromList(ip1, currentNodes).addAdjacentNode(getIPFromList(ip2, currentNodes));
+            getIPFromList(ip2, currentNodes).addAdjacentNode(getIPFromList(ip1, currentNodes));
+            if (networkIsValid(currentNodes)) {
+                return true;
+            }
+            getIPFromList(ip1, currentNodes).getAdjacentNodes().remove(getIPFromList(ip2, currentNodes));
+            getIPFromList(ip2, currentNodes).getAdjacentNodes().remove(getIPFromList(ip1, currentNodes));
+        }
         return false;
     }
 
     public boolean disconnect(final IP ip1, final IP ip2) {
-        return false;
+        List<IP> currentNodes = new ArrayList<>(nodes);
+        Set<IP> ip1AdjNodes = getIPFromList(ip1, currentNodes).getAdjacentNodes();
+        Set<IP> ip2AdjNodes = getIPFromList(ip2, currentNodes).getAdjacentNodes();
+
+        if (ip1 == null || ip1.equals(ip2) || !nodes.contains(ip1) || !nodes.contains(ip2)
+                || (ip1AdjNodes.size() == 1 && ip2AdjNodes.size() == 1) ) {
+            return false;
+        }
+        ip1AdjNodes.remove(getIPFromList(ip2, currentNodes));
+        ip2AdjNodes.remove(getIPFromList(ip1, currentNodes));
+        if (ip1AdjNodes.size() == 0) {
+            nodes.remove(getIPFromList(ip1, currentNodes));
+        }
+        if (ip2AdjNodes.size() == 0) {
+            nodes.remove(getIPFromList(ip2, currentNodes));
+        }
+        return true;
     }
 
     public boolean contains(final IP ip) {
+        for (IP node : nodes) {
+            node.setVisited(false);
+        }
+        //implement queue
+        Queue<IP> queue = new LinkedList<>();
+        //getting random root and setting up
+        IP root = List.copyOf(nodes).get(0);
+        queue.add(root);
+        root.setVisited(true);
+        //main loop
+        while (!queue.isEmpty()) {
+            IP current = queue.poll();
+            //mark all adjacent nodes and add them to queue
+            for (IP adjacentNode : current.getAdjacentNodes()) {
+                if (adjacentNode.equals(ip)) {
+                    return true;
+                }
+                if (!adjacentNode.getVisited()) {
+                    adjacentNode.setVisited(true);
+                    queue.add(adjacentNode);
+                }
+            }
+        }
         return false;
     }
 
     public int getHeight(final IP root) {
-        return 0;
+        for (IP node : nodes) {
+            node.setParent(null);
+        }
+        List<IP> currentNodes = new ArrayList<>(nodes);
+        IP currentRoot = getIPFromList(root, currentNodes);
+        return heightRecursion(currentRoot) - 1;
+    }
+
+    private static int heightRecursion(final IP root) {
+        int currentHeight = 0;
+        for (IP adjacentNode : root.getAdjacentNodes()) {
+            if (adjacentNode.getParent() == null) {
+                adjacentNode.setParent(root);
+            }
+            if (!adjacentNode.equals(root.getParent())) {
+
+                currentHeight = Math.max(currentHeight, heightRecursion(adjacentNode));
+            }
+        }
+        return ++currentHeight;
     }
 
     public List<List<IP>> getLevels(final IP root) {

@@ -24,6 +24,7 @@ public class IP implements Comparable<IP> {
     private IP parent = null;
     //used in BFS
     private boolean visited = false;
+    public int height = 0;
     private Set<IP> adjacentNodes = new HashSet<>();
 
     /**
