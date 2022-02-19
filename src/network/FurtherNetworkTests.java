@@ -5,6 +5,7 @@ import src.ip.IP;
 import src.parsing.BracketNotationParser;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -17,7 +18,7 @@ public class FurtherNetworkTests {
         Network network = new Network("(0.0.0.0 1.1.1.1 2.2.2.2)");
         network.getNodes().add(new IP("13.13.13.13"));
         List<IP> nodes = List.copyOf(network.getNodes());
-        assertFalse(network.networkIsValid(nodes));
+
     }
 
     @Test
@@ -100,7 +101,7 @@ parser.parse("  ");
 
     @Test
     public void connectAndDisconnectTest() throws ParseException {
-        Network network = new Network("(85.193.148.255 (141.255.1.133 122.117.67.158 0.146.197.108) 34.49.145.239 (231.189.0.127 77.135.84.171 39.20.222.120 252.29.23.0 116.132.83.77) 9.9.9.9 8.8.8.8 7.7.7.7 6.6.6.6 5.5.5.5 1.1.1.1 4.4.4.4 3.3.3.3 2.2.2.2)");
+        Network network = new Network("(255.255.255.255 (141.255.1.133 122.117.67.158 0.146.197.108) 34.49.145.239 (231.189.0.127 77.135.84.171 39.20.222.120 252.29.23.0 116.132.83.77) 9.9.9.9 8.8.8.8 7.7.7.7 6.6.6.6 5.5.5.5 1.1.1.1 4.4.4.4 3.3.3.3 2.2.2.2)");
         Network network1 = new Network("(0.0.0.0 1.1.1.1 2.2.2.2)");
         Network network2 = new Network("(3.3.3.3 (4.4.4.4 5.5.5.5) 6.6.6.6)");
         assertFalse(network1.connect(new IP("1.1.1.1"),  new IP("2.2.2.2")));
@@ -135,5 +136,12 @@ parser.parse("  ");
         assertEquals(3, network1.getHeight(new IP("3.3.3.3")));
         assertEquals(6, network1.getHeight(new IP("0.0.0.0")));
         assertEquals(4, network.getHeight(new IP("77.135.84.171")));
+        network.getLevels(new IP("85.193.148.255"));
+    }
+
+    @Test
+    public void getRouteTest() throws ParseException {
+        Network network = new Network("(85.193.148.255 (141.255.1.133 122.117.67.158 0.146.197.108) 34.49.145.239 (231.189.0.127 77.135.84.171 39.20.222.120 252.29.23.0 116.132.83.77) 9.9.9.9 8.8.8.8 7.7.7.7 6.6.6.6 5.5.5.5 1.1.1.1 4.4.4.4 3.3.3.3 2.2.2.2)");
+        network.getRoute(new IP("77.135.84.171"), new IP("122.117.67.158"));
     }
 }

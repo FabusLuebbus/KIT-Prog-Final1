@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class Network {
+    //TODO probably turn nodes into List and remove lIst.copyOf usages
     private  Set<IP> nodes = new LinkedHashSet<>();
 
     /**
@@ -246,18 +247,123 @@ public class Network {
     }
 
     public List<List<IP>> getLevels(final IP root) {
-        return null;
+        List<List<IP>> output = getLevelsUnsorted(root);
+        for (List<IP> level : output) {
+            Collections.sort(level);
+        }
+        return output;
+    }
+
+    private List<List<IP>> getLevelsUnsorted(IP root) {
+        List<List<IP>> output = new LinkedList<>();
+        if (!nodes.contains(root)) {
+            return output;
+        }
+        List<IP> currentNodes;
+        try {
+            currentNodes = deepCopy(nodes);
+        } catch (ParseException e) {
+            return output;
+        }
+        int currLevel = 0;
+        output.add(new LinkedList<IP>());
+        //start
+        for (IP node : currentNodes) {
+            node.setParent(null);
+            node.setVisited(false);
+            //node.setLevel(0);
+        }
+        //implement queue
+        Queue<Object> queue = new LinkedList<>();
+        String levelMarker = "";
+        //getting random root and setting up
+        queue.add(getIPFromList(root, currentNodes));
+        queue.add(levelMarker);
+        getIPFromList(root, currentNodes).setVisited(true);
+        IP current;
+        //main loop
+        while (!queue.isEmpty()) {
+            if (queue.peek().equals(levelMarker)) {
+                currLevel++;
+                output.add(new LinkedList<>());
+                queue.poll();
+            }
+            if (queue.peek() != null && queue.peek().equals(levelMarker)) {
+                output.remove(output.size() - 1);
+                break;
+            }
+            current = (IP) queue.poll();
+            output.get(currLevel).add(current);
+            //mark all adjacent nodes and add them to queue
+            for (IP adjacentNode : current.getAdjacentNodes()) {
+                if (!adjacentNode.getVisited() && !adjacentNode.equals(current.getParent())) {
+                    adjacentNode.setVisited(true);
+                    adjacentNode.setParent(current);
+                    adjacentNode.setLevel(currLevel + 1);
+                    queue.add(adjacentNode);
+                }
+            }
+            if (queue.peek().equals(levelMarker)) {
+                queue.add(levelMarker);
+            }
+        }
+        return output;
     }
 
     public List<IP> getRoute(final IP start, final IP end) {
-        return null;
+        for (IP node : nodes) {
+            node.setParent(null);
+            node.setVisited(false);
+        }
+        //implement queue
+        Queue<IP> queue = new LinkedList<>();
+        List<IP> output = new LinkedList<>();
+        //getting random root and setting up
+        IP root = getIPFromList(start, List.copyOf(nodes));
+        queue.add(root);
+        root.setVisited(true);
+        IP current = root;
+        //main loop
+        while (!queue.isEmpty()) {
+            current = queue.poll();
+            //mark all adjacent nodes and add them to queue
+            for (IP adjacentNode : current.getAdjacentNodes()) {
+                if (adjacentNode.equals(end)) {
+                    adjacentNode.setParent(current);
+                    current = adjacentNode;
+                    queue.clear();
+                    break;
+                }
+                if (!adjacentNode.getVisited() && !adjacentNode.equals(current.getParent())) {
+                    adjacentNode.setParent(current);
+                    adjacentNode.setVisited(true);
+                    queue.add(adjacentNode);
+                }
+            }
+        }
+        if (!current.equals(end)) {
+            return new LinkedList<>();
+        }
+        //current state we found end. And by using parent attributes path is already found
+        output.add(0, current);
+        while (!current.equals(start)) {
+            output.add(0, current.getParent());
+            current = current.getParent();
+        }
+
+        try {
+            return deepCopy(output);
+        } catch (ParseException e) {
+            return new LinkedList<>();
+        }
+
     }
 
     public String toString(IP root) {
-        return null;
-    }
 
-    //TODO use marker object in root for other uses
+    return  null;
+    }
+    
 
     /**
      *  checks a network for validity. A network is considered invalid if one of the following states appears:
@@ -283,7 +389,7 @@ public class Network {
      * @param nodes List of nodes to be evaluated
      * @return whether nodes represents a valid network
      */
-    public boolean networkIsValid(List<IP> nodes) {
+    private boolean networkIsValid(List<IP> nodes) {
         //reset parameters of nodes
         for (IP node : nodes) {
             node.setParent(null);
@@ -338,24 +444,27 @@ public class Network {
     private static List<IP> deepCopy(Collection<IP> nodes) throws ParseException {
         List<IP> nodesCopy = new LinkedList<>();
         for (IP node : nodes) {
-            if (!nodesCopy.contains(node)) {
-                IP nodeClone = new IP(node.toString());
-                nodesCopy.add(nodeClone);
-            }
-            //making sure to reference clone in List
-            IP nodeCloneInList = getIPFromList(node, nodesCopy);
-            //iterating over original node's adjacency list to provide copy as adjacency list to clones
-            for (IP adjacentNode : node.getAdjacentNodes()) {
-                if (nodesCopy.contains(adjacentNode)) {
-                    getIPFromList(adjacentNode, nodesCopy).addAdjacentNode(nodeCloneInList);
-                } else {
-                    IP adjClone = new IP(adjacentNode.toString());
-                    adjClone.addAdjacentNode(nodeCloneInList);
-                    nodeCloneInList.addAdjacentNode(adjClone);
-                    nodesCopy.add(adjClone);
+            IP nodeClone = new IP(node.toString());
+            nodesCopy.add(nodeClone);
+        }
+
+        for (IP node : nodes) {
+            if (nodesCopy.contains(node)) {
+                //making sure to reference clone in List
+                IP nodeClone = getIPFromList(node, nodesCopy);
+                IP adjNodeClone;
+                //iterating over original node's adjacency list to provide copy as adjacency list to clones
+                for (IP adjacentNode : node.getAdjacentNodes()) {
+                    if (nodesCopy.contains(adjacentNode)) {
+                        adjNodeClone = getIPFromList(adjacentNode, nodesCopy);
+                        nodeClone.addAdjacentNode(adjNodeClone);
+                        adjNodeClone.addAdjacentNode(nodeClone);
+                    }
                 }
             }
         }
         return nodesCopy;
     }
+
+    //TODO use same find method in contains and get route
 }

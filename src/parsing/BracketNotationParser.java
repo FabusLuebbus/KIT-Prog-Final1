@@ -34,6 +34,7 @@ public class BracketNotationParser {
     private String lookahead;
     private StreamTokenizer tokenizer;
     private int nestingDepth = 0;
+    private List<String> tokenizedInput = new LinkedList<>();
     private final List<IP> roots = new ArrayList<>();
     private final List<IP> nodes = new ArrayList<>();
     private final Set<String> addedIPs = new HashSet<>();
@@ -48,6 +49,7 @@ public class BracketNotationParser {
     }
 
     private void next() throws IOException {
+        tokenizedInput.add(tokenizer.sval);
         tokenizer.nextToken();
         lookahead = tokenizer.sval;
     }

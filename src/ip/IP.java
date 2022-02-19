@@ -24,8 +24,8 @@ public class IP implements Comparable<IP> {
     private IP parent = null;
     //used in BFS
     private boolean visited = false;
-    public int height = 0;
-    private Set<IP> adjacentNodes = new HashSet<>();
+    private int level = 0;
+    private final Set<IP> adjacentNodes = new HashSet<>();
 
     /**
      * constructor for IPs.
@@ -113,6 +113,14 @@ public class IP implements Comparable<IP> {
         return parent;
     }
 
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
     /**
      * getter method for binary interpretation (without '.') of ip as string
      *
@@ -139,12 +147,7 @@ public class IP implements Comparable<IP> {
 
     @Override
     public int compareTo(IP o) {
-        if (o.ipValue > ipValue) {
-            return -1;
-        } else if (o.ipValue < ipValue) {
-            return 1;
-        }
-        return 0;
+        return Long.compare(ipValue, o.ipValue);
     }
 
     @Override
