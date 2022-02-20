@@ -10,7 +10,7 @@ import java.util.*;
 
 public class Network {
     //TODO probably turn nodes into List and remove lIst.copyOf usages
-    private  Set<IP> nodes = new LinkedHashSet<>();
+    private  List<IP> nodes = new LinkedList<>();
 
     /**
      * generates a network of height 1. links all children to root and the other way round
@@ -80,7 +80,7 @@ public class Network {
     }
 
     //TODO following 2 methods are only used in tests!
-    public Set<IP> getNodes() {
+    public List<IP> getNodes() {
         return nodes; //TODO think about immutable map here
     }
 
@@ -94,18 +94,13 @@ public class Network {
     public boolean add(final Network subnet) {
         //creating temporary nodes list to simulate adding of subnet
         List<IP> tempNodesList;
-        try {
-            tempNodesList = deepCopy(nodes);
-        } catch (ParseException | IllegalArgumentException e) {
-            return false;
-        }
+
+        tempNodesList = deepCopy(nodes);
         // create deep copy list of subnet.nodes
         List<IP> subnetNodes;
-        try {
-            subnetNodes = deepCopy(subnet.nodes);
-        } catch (ParseException | IllegalArgumentException e) {
-            return false;
-        }
+
+        subnetNodes = deepCopy(subnet.nodes);
+
         //current state: created temporary testing list of nodes
         //following: add subnet nodes
         for (IP subNode : subnetNodes) {
@@ -125,6 +120,7 @@ public class Network {
                     }
                 }
             } else {
+                tempNodesList.add(subNode);
                 for (IP subAdjNode : subNode.getAdjacentNodes()) {
                     if (tempNodesList.contains(subAdjNode)) {
                         //subNode is not contained in tempNodeList but subAdjNode is
@@ -132,11 +128,9 @@ public class Network {
                         //make subNode point to correct node (in List)
                         subNode.getAdjacentNodes().remove(subAdjNode);
                         subNode.addAdjacentNode(getIPFromList(subAdjNode, tempNodesList));
-                        tempNodesList.add(subNode);
                     } else {
                         //neither subNode nor subAdjNode are contained tempNodesList
                         //assumption: no need to add connection since they are connected already
-                        tempNodesList.add(subNode);
                         tempNodesList.add(subAdjNode);
                     }
                 }
@@ -147,7 +141,7 @@ public class Network {
             return false;
         }
         //add nodes and edges, duplicates are avoided automatically because of add implementation in set
-        nodes = new LinkedHashSet<>(tempNodesList);
+        nodes = tempNodesList;
         //clear edges and generate new edges based on new nodes
         return true;
     }
@@ -158,7 +152,7 @@ public class Network {
      * @return sorted nodes list
      */
     public List<IP> list() {
-        List<IP> sortedNodes = new ArrayList<>(nodes);
+        List<IP> sortedNodes = deepCopy(nodes);
         Collections.sort(sortedNodes);
         return sortedNodes;
     }
@@ -261,11 +255,9 @@ public class Network {
             return output;
         }
         List<IP> currentNodes;
-        try {
-            currentNodes = deepCopy(nodes);
-        } catch (ParseException e) {
-            return output;
-        }
+
+        currentNodes = deepCopy(nodes);
+
         int currLevel = 0;
         output.add(new LinkedList<IP>());
         //start
@@ -350,13 +342,7 @@ public class Network {
             output.add(0, current.getParent());
             current = current.getParent();
         }
-
-        try {
-            return deepCopy(output);
-        } catch (ParseException e) {
-            return new LinkedList<>();
-        }
-
+        return deepCopy(output);
     }
 
     public String toString(IP root) {
@@ -445,10 +431,15 @@ public class Network {
         return list.get(list.indexOf(ip));
     }
 
-    private static List<IP> deepCopy(Collection<IP> nodes) throws ParseException {
+    private static List<IP> deepCopy(Collection<IP> nodes) {
         List<IP> nodesCopy = new LinkedList<>();
         for (IP node : nodes) {
-            IP nodeClone = new IP(node.toString());
+            IP nodeClone;
+            try {
+                nodeClone = new IP(node.toString());
+            } catch (ParseException e) {
+                return new ArrayList<>();
+            }
             nodesCopy.add(nodeClone);
         }
 
