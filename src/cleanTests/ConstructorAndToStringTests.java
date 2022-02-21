@@ -109,4 +109,14 @@ public class ConstructorAndToStringTests {
         assertEquals("(85.193.148.81 34.49.145.239 (141.255.1.133 0.146.197.108 122.117.67.158) (231.189.0.127 39.20.222.120 77.135.84.171 116.132.83.77 252.29.23.0))", network1.toString(new IP("85.193.148.81")));
         assertEquals("(10.10.10.10 (0.0.0.0 (1.1.1.1 2.2.2.2 7.7.7.7) (3.3.3.3 4.4.4.4 8.8.8.8) (5.5.5.5 6.6.6.6 9.9.9.9)))", network2.toString(new IP("10.10.10.10")));
     }
+
+    @Test
+    public void addTests() throws ParseException {
+        Network network = new Network(DEEPLY_NESTED);
+        Network network1 = new Network(NETWORK_FROM_EXAMPLE);
+
+        assertFalse(network.add(new Network("(0.0.0.0 1.1.1.1)")));
+    }
+
+    
 }

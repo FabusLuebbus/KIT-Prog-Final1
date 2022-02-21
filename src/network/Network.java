@@ -79,13 +79,10 @@ public class Network {
      */
     public boolean add(final Network subnet) {
         //creating temporary nodes list to simulate adding of subnet
-        List<IP> tempNodesList;
-
-        tempNodesList = deepCopy(nodes);
+        List<IP> tempNodesList = deepCopy(nodes);
         // create deep copy list of subnet.nodes
-        List<IP> subnetNodes;
-
-        subnetNodes = deepCopy(subnet.nodes);
+        List<IP> subnetNodes = deepCopy(subnet.nodes);
+        boolean addedNewNodes = false;
 
         //current state: created temporary testing list of nodes
         //following: add subnet nodes
@@ -103,6 +100,7 @@ public class Network {
                         subAdjNode.getAdjacentNodes().remove(subNode);
                         subAdjNode.addAdjacentNode(getIPFromList(subNode, tempNodesList));
                         tempNodesList.add(subAdjNode);
+                        addedNewNodes = true;
                     }
                 }
             } else {
@@ -114,10 +112,12 @@ public class Network {
                         //make subNode point to correct node (in List)
                         subNode.getAdjacentNodes().remove(subAdjNode);
                         subNode.addAdjacentNode(getIPFromList(subAdjNode, tempNodesList));
+                        addedNewNodes = true;
                     } else {
                         //neither subNode nor subAdjNode are contained tempNodesList
                         //assumption: no need to add connection since they are connected already
                         tempNodesList.add(subAdjNode);
+                        addedNewNodes = true;
                     }
                 }
             }
@@ -126,10 +126,23 @@ public class Network {
         if (!networkIsValid(tempNodesList)) {
             return false;
         }
+        //checking if anything changed
+        boolean networkChanged = false;
+        if (!addedNewNodes) {
+            outerloop:
+            for (IP node : tempNodesList) {
+                for (IP adjNode : node.getAdjacentNodes()) {
+                    if (!getIPFromList(node, nodes).getAdjacentNodes().contains(getIPFromList(adjNode, nodes))) {
+                        networkChanged = true;
+                        break outerloop;
+                    }
+                }
+            }
+        }
         //add nodes and edges, duplicates are avoided automatically because of add implementation in set
         nodes = tempNodesList;
         //clear edges and generate new edges based on new nodes
-        return true;
+        return networkChanged;
     }
 
     /**
