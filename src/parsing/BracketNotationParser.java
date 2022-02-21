@@ -54,7 +54,7 @@ public class BracketNotationParser {
 
     private void match(String expected) throws IOException, ParseException {
         if (!lookahead.equals(expected)) {
-            throw new ParseException("unexpected token");
+            throw new ParseException(1);
         } else {
             next();
         }
@@ -63,8 +63,7 @@ public class BracketNotationParser {
     private void matchIP() throws ParseException {
         //checking for invalid IP-syntax / double entries
         if (!lookahead.matches(IP_PATTERN) || addedIPs.contains(lookahead)) {
-            throw new ParseException("Invalid bracket notation (check number of IPs, brackets, "
-                    + "Ip-syntax and look for double entries)");
+            throw new ParseException(2);
         } else {
             //creating new node from IP and adding it to nodes, adding its production root as adjacent node if existent
             IP node = new IP(lookahead);
@@ -95,7 +94,7 @@ public class BracketNotationParser {
         which makes such checks impossible.
          */
         if (bracketNotation.matches(".* {2}.*|.*\\( .*|.* \\).*") || bracketNotation.length() < 17) {
-            throw new ParseException("This is not a valid bracket notation");
+            throw new ParseException(3);
         }
         //replacing '(' with '( ' and ')' with ' )' so brackets will be independent tokens as well as IPs
         String editedBracketNotation = bracketNotation.replace("(", "( ").replace(")", " )");
@@ -112,7 +111,7 @@ public class BracketNotationParser {
         match(")");
         //finished parsing. now checking if input stream also ended. If yes input was successfully parsed.
         if (tokenizer.ttype != StreamTokenizer.TT_EOF) {
-            throw new ParseException("Invalid bracket Notation");
+            throw new ParseException(4);
         }
     }
 
@@ -140,17 +139,19 @@ public class BracketNotationParser {
     }
 
     private void parseIP() throws IOException, ParseException {
-        if (lookahead != null && !lookahead.equals(")")) {
-            matchIP();
-            next();
-        }
         if (lookahead != null && lookahead.equals("(")) {
             next();
             parseBracketContent();
             match(")");
             roots.remove(roots.size() - 1);
             nestingDepth--;
+        } else if (lookahead != null && !lookahead.equals(")")) {
+            matchIP();
+            next();
         }
+
+
+
         if (lookahead != null && !lookahead.equals(")")) {
             parseIP();
         }

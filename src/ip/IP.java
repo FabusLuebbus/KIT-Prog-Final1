@@ -37,7 +37,7 @@ public class IP implements Comparable<IP> {
      */
     public IP(final String pointNotation) throws ParseException {
         if ((!pointNotation.matches(IP_PATTERN))) {
-            throw new ParseException("This IP-Address is not valid. It does not match the required pattern");
+            throw new ParseException(5);
         }
 
         String[] pointNotationArray = pointNotation.split("\\.");
@@ -47,6 +47,69 @@ public class IP implements Comparable<IP> {
             ipAsBinary.append(String.format("%8s", Long.toBinaryString(Long.parseLong(s))).replace(' ', '0'));
         }
         ipValue = Long.parseLong(ipAsBinary.toString(), 2);
+    }
+
+    /**
+     * getter method for binary interpretation (without '.') of ip as string
+     *
+     * @return binary interpretation
+     */
+    public long getIpValue() {
+        return ipValue;
+    }
+
+    /**
+     * setter method for parent attribute used in breadth searching algorithms
+     *
+     * @param parent IP from which this IP was reached
+     */
+    public void setParent(IP parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * getter method for parent attribute
+     *
+     * @return IP from which this IP was reached during searching algorithm
+     */
+    public IP getParent() {
+        return parent;
+    }
+
+    /**
+     * setter method for visited attribute used in breadth searching algorithms
+     *
+     * @param b true is visited, false if not
+     */
+    public void setVisited(boolean b) {
+        visited = b;
+    }
+
+    /**
+     * getter method for visited attribute
+     *
+     * @return true if visited, false if not
+     */
+    public boolean getVisited() {
+        return visited;
+    }
+
+    /**
+     * setter method for level attribute used in breadth first search when getting levels
+     *
+     * @param level states which level of the tree this IP belongs to
+     */
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    /**
+     * getter method for level attribute
+     *
+     * @return level of this IP in tree
+     */
+    public int getLevel() {
+        return level;
     }
 
     /**
@@ -74,60 +137,6 @@ public class IP implements Comparable<IP> {
      */
     public Set<IP> getAdjacentNodes() {
         return adjacentNodes;
-    }
-
-    /**
-     * setter method for visited parameter used in breadth searching algorithms
-     *
-     * @param b true is visited, false if not
-     */
-    public void setVisited(boolean b) {
-        visited = b;
-    }
-
-
-    /**
-     * setter method for parent variable used in breadth searching algorithms
-     *
-     * @param parent IP from which this IP was reached
-     */
-    public void setParent(IP parent) {
-        this.parent = parent;
-    }
-
-    /**
-     * getter method for visited parameter
-     *
-     * @return true if visited, false if not
-     */
-    public boolean getVisited() {
-        return visited;
-    }
-
-    /**
-     * getter method for parent variable
-     *
-     * @return IP from which this IP was reached during searching algorithm
-     */
-    public IP getParent() {
-        return parent;
-    }
-
-    public void setLevel(int level) {
-        this.level = level;
-    }
-
-    public int getLevel() {
-        return level;
-    }
-
-    /**
-     * getter method for binary interpretation (without '.') of ip as string
-     *
-     * @return binary interpretation
-     */
-    public long getIpValue() {
-        return ipValue;
     }
 
     @Override

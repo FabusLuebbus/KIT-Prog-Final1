@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.util.*;
 
 public class Network {
-    //TODO probably turn nodes into List and remove lIst.copyOf usages
     private  List<IP> nodes = new LinkedList<>();
 
     /**
@@ -23,18 +22,10 @@ public class Network {
         if (root == null || children == null) { throw new IllegalArgumentException("argument not instantiated."); }
 
         //generating mutable deep copy of children
-        List<IP> childrenCopy = new LinkedList<>();
-        try {
-            for (IP child : children) {
-                if (child == null || child.equals(root)) {
-                    throw new IllegalArgumentException("child is not instantiated or equals root");
-                }
-                childrenCopy.add(new IP(child.toString()));
-            }
-        } catch (ParseException e) {
-            throw new IllegalArgumentException("Invalid IPs");
+        List<IP> childrenCopy = deepCopy(children);
+        if (childrenCopy.size() == 0) {
+            throw new IllegalArgumentException("please provide a valid List of children");
         }
-
         //adding all children to nodes with root as their only adjacent node, if child is already added throw exception
         for (IP child : childrenCopy) {
             if (nodes.contains(child)) {
@@ -61,11 +52,11 @@ public class Network {
      */
     public Network(final String bracketNotation) throws ParseException {
         //trying to parse bracketNotation
-        BracketNotationParser parser = new BracketNotationParser(); //TODO remove alternate from name once sure its working
+        BracketNotationParser parser = new BracketNotationParser();
         try {
             parser.parse(bracketNotation);
         } catch (IOException e) {
-            throw new ParseException("Not a valid bracket notation");
+            throw new ParseException(0);
         }
         /*
         parsed successfully. since parser returns nodes only pointing at their 'production root' we have to complete
@@ -79,17 +70,12 @@ public class Network {
         }
     }
 
-    //TODO following 2 methods are only used in tests!
-    public List<IP> getNodes() {
-        return nodes; //TODO think about immutable map here
-    }
-
     /**
      * Tries to add new subnet to this Network. Checks validity of new Network using {@link #networkIsValid(List)}.
      * If new network is not valid no changes are made on this Network
      *
      * @param subnet the network to be added to this network
-     * @return  whether the network was succesfully changed
+     * @return  whether the network was successfully changed
      */
     public boolean add(final Network subnet) {
         //creating temporary nodes list to simulate adding of subnet
@@ -259,7 +245,7 @@ public class Network {
         currentNodes = deepCopy(nodes);
 
         int currLevel = 0;
-        output.add(new LinkedList<IP>());
+        output.add(new LinkedList<>());
         //start
         for (IP node : currentNodes) {
             node.setParent(null);
@@ -285,6 +271,9 @@ public class Network {
                 output.remove(output.size() - 1);
                 break;
             }
+            if (queue.peek() == null) {
+                break;
+            }
             current = (IP) queue.poll();
             output.get(currLevel).add(current);
             //mark all adjacent nodes and add them to queue
@@ -296,7 +285,7 @@ public class Network {
                     queue.add(adjacentNode);
                 }
             }
-            if (queue.peek().equals(levelMarker)) {
+            if (queue.peek() != null && queue.peek().equals(levelMarker)) {
                 queue.add(levelMarker);
             }
         }
@@ -351,9 +340,6 @@ public class Network {
         printer.print(getLevelsUnsorted(thisRoot));
         return printer.getBracketNotation();
     }
-
-
-    
 
     /**
      *  checks a network for validity. A network is considered invalid if one of the following states appears:
@@ -437,7 +423,7 @@ public class Network {
             IP nodeClone;
             try {
                 nodeClone = new IP(node.toString());
-            } catch (ParseException e) {
+            } catch (ParseException | NullPointerException e) {
                 return new ArrayList<>();
             }
             nodesCopy.add(nodeClone);

@@ -1,7 +1,8 @@
-package src.network;
+package src.tests;
 import org.junit.*;
 import src.exceptions.ParseException;
 import src.ip.IP;
+import src.network.Network;
 import src.parsing.BracketNotationParser;
 
 import java.io.IOException;
@@ -16,8 +17,6 @@ public class FurtherNetworkTests {
     public void bfsTest() throws ParseException {
         List<IP> ips = new LinkedList<>();
         Network network = new Network("(0.0.0.0 1.1.1.1 2.2.2.2)");
-        network.getNodes().add(new IP("13.13.13.13"));
-        List<IP> nodes = List.copyOf(network.getNodes());
 
     }
 
@@ -34,16 +33,6 @@ public class FurtherNetworkTests {
         assertTrue(network1.add(subnetSuccess));
         assertFalse(network2.add(subnetFail));
         assertFalse(network3.add(subnetFail3));
-        for (IP ip : network2.getNodes()) {
-            System.out.print(ip + " | ");
-
-        }
-        System.out.println("");
-        for (IP ip : network2.getNodes()) {
-            System.out.print(System.identityHashCode(ip) + " | ");
-
-        }
-        System.out.println("");
 
     }
 
@@ -81,14 +70,9 @@ parser.parse("  ");
     public void bracketNetworkConstructorTest() throws ParseException {
         //Network network = new Network("(85.193.148.255 (141.255.1.133 122.117.67.158 0.146.197.108) 34.49.145.239 (231.189.0.127 77.135.84.171 39.20.222.120 252.29.23.0 116.132.83.77))");
         Network network = new Network("(0.0.0.0 (1.1.1.1 (2.2.2.2 (3.3.3.3 (4.4.4.4 (5.5.5.5))))))");
-        System.out.println(network.getNodes().toString());
-        for (IP node : network.getNodes()) {
-            for (IP adjacentNode : node.getAdjacentNodes()) {
-                System.out.print(adjacentNode.toString() + " | ");
-            }
-            System.out.println("");
-        }
+
     }
+
 
     @Test
     public void sortTest() throws ParseException {

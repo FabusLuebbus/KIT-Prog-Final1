@@ -1,10 +1,12 @@
-package src.network;
+package src.tests;
 import org.junit.*;
 import src.exceptions.ParseException;
 import src.ip.IP;
+import src.network.Network;
 
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 
@@ -24,7 +26,6 @@ public class NetworkCreationTests {
     public void testFirstConstructor() throws ParseException {
         Network network = new Network(root, nodeList.get(1));
 
-        assertEquals("[1.1.1.1, 2.2.2.2, 0.0.0.0]", network.getNodes().toString());
 
     }
 
@@ -43,12 +44,15 @@ public class NetworkCreationTests {
     @Test
     public void bracketConstructorTest() throws ParseException {
         Network network = new Network("(85.193.148.255 (141.255.1.133 122.117.67.158 0.146.197.108) 34.49.145.239 (231.189.0.127 77.135.84.171 39.20.222.120 252.29.23.0 116.132.83.77))");
-        assertEquals("[85.193.148.255, 141.255.1.133, 122.117.67.158, 0.146.197.108, 34.49.145.239, 231.189.0.127, 77.135.84.171, 39.20.222.120, 252.29.23.0, 116.132.83.77]", network.getNodes().toString());
-        for (IP ip : network.getNodes()) {
-            System.out.print(System.identityHashCode(ip) + " | ");
 
-        }
-        System.out.println("");
 
+    }
+
+    @Test public void nullChildTest() throws ParseException {
+        IP ip = null;
+        List<IP> list = new LinkedList<>();
+        list.add(ip);
+
+        Network network = new Network(new IP("0.0.0.0"), list);
     }
 }

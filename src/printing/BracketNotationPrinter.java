@@ -6,38 +6,55 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * class which provides functionality to print a given network topology (given as list of levels)
+ * as a String in bracket notation
+ *
+ * @author usmsk
+ * @version 1.0
+ */
 public class BracketNotationPrinter {
-    private List<IP> upperTree;
-    private List<Object> output = new ArrayList<>();
-    private StringBuilder s = new StringBuilder();
+    private final List<Object> parts = new ArrayList<>();
+    private final StringBuilder output = new StringBuilder();
+
+    /**
+     * iterates over parts and produces output string. If print was already called parts contains all IPs and brackets
+     * in correct order.
+     *
+     * @return String bracketNotation
+     */
     public String getBracketNotation() {
-        s.append('(');
-        for (Object part : output) {
-            s.append(part).append(' ');
+        output.append('(');
+        for (Object part : parts) {
+            output.append(part).append(' ');
         }
-        s.append(')');
-        return s.toString().replace("( ", "(").replace(" )", ")");
+        output.append(')');
+        return output.toString().replace("( ", "(").replace(" )", ")");
     }
 
+    /**
+     * initial method to start printing network
+     *
+     * @param levels input of network as list of levels
+     */
     public void print(List<List<IP>> levels) {
-        upperTree = levels.get(0);
-        output.add(upperTree.get(0));
+        List<IP> upperTree = levels.get(0);
+        parts.add(upperTree.get(0));
         List<IP> adjNodes = new ArrayList<>(upperTree.get(0).getAdjacentNodes());
         Collections.sort(adjNodes);
         for (IP adj : adjNodes) {
             printAdjacentNodes(adj);
         }
         addBrackets();
-        //upperTree.remove(0);
     }
-//(S -> (BC)), (BC -> ipIP | ip(BC)IP), (IP -> ipIP | ip(BC)IP | ε)
+
     private void printAdjacentNodes(IP root) {
         if (root.getAdjacentNodes().size() == 1) {
-            output.add(root);
+            parts.add(root);
         } else {
             List<IP> adjNodes = new ArrayList<>(root.getAdjacentNodes());
             Collections.sort(adjNodes);
-            output.add(root);
+            parts.add(root);
             for (IP adj : adjNodes) {
                 if (!adj.equals(root.getParent())) {
                     printAdjacentNodes(adj);
@@ -52,20 +69,21 @@ public class BracketNotationPrinter {
         int numberOfBracketsToClose = 0;
         int numberOfOpenBrackets = 0;
         int offset = 0;
-        for (int i = 0; i < output.size() - 1; i++) {
-            IP current = (IP) output.get(i + offset);
-            if (i + 1 + offset >= output.size()) {
-                break;
-            }
-            IP next = (IP) output.get(i + 1 + offset);
+        for (int i = 0; i < parts.size(); i++) {
+            IP current = (IP) parts.get(i + offset);
+
             if (putClosingBracket) {
                 for (int j = 0; j < numberOfBracketsToClose; j++) {
-                    output.add(i, ")");
+                    parts.add(i + offset, ")");
                     numberOfOpenBrackets--;
                     offset++;
                 }
                 putClosingBracket = false;
             }
+            if (i + 1 + offset >= parts.size()) {
+                break;
+            }
+            IP next = (IP) parts.get(i + 1 + offset);
             if (current.getLevel() > next.getLevel()) {
                 putClosingBracket = true;
                 numberOfBracketsToClose = current.getLevel() - next.getLevel();
@@ -74,14 +92,14 @@ public class BracketNotationPrinter {
                 ignore = false;
             } else {
                 if (current.getLevel() < next.getLevel()) {
-                    output.add(i + offset, "(");
+                    parts.add(i + offset, "(");
                     numberOfOpenBrackets++;
                     ignore = true;
                 }
             }
         }
         for (int k = 0; k < numberOfOpenBrackets; k++) {
-            output.add(")");
+            parts.add(")");
         }
     }
 }

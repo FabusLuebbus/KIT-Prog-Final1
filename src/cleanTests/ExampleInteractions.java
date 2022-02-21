@@ -1,12 +1,16 @@
-package src;
+package src.cleanTests;
 
+import org.junit.Test;
 import src.exceptions.ParseException;
 import src.ip.IP;
 import src.network.Network;
 
 import java.util.List;
 
-public class GeneralTest {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+
+public class ExampleInteractions {
     public static void main(String[] args) throws ParseException {
          // Construct initial network
         IP root = new IP("141.255.1.133");
@@ -92,4 +96,57 @@ public class GeneralTest {
                  new IP("141.255.1.133"), new IP("231.189.0.127"),
                  new IP("252.29.23.0")).equals(network.list()));
          }
+
+ public static class IPTest {
+     IP ip1 = new IP("0.0.0.0");
+     IP ip11 = new IP("0.0.0.0");
+     IP ip2 = new IP("211.1.1.1");
+     IP ip22 = new IP("211.1.1.1");
+     IP ip3 = new IP("255.255.255.255");
+     IP ip33 = new IP("255.255.255.255");
+     IP ip4 = new IP("54.97.43.123");
+
+     public IPTest() throws ParseException {
+     }
+
+     @Test(expected = ParseException.class)
+     public void errorTest() throws ParseException {
+         IP differentIP = new IP("2111.1.1.1");
+     }
+
+     @Test
+     public void constructorTest() throws ParseException {
+         assertEquals(3540058369L, ip2.getIpValue());
+     }
+
+     @Test
+     public void comparisonTest() throws ParseException {
+         assertEquals(-1, ip1.compareTo(ip2));
+         assertEquals(-1, ip1.compareTo(ip3));
+         assertEquals(0, ip1.compareTo(ip11));
+         assertEquals(1, ip2.compareTo(ip1));
+         assertEquals(-1, ip2.compareTo(ip3));
+         assertEquals(0, ip2.compareTo(ip22));
+         assertEquals(1, ip3.compareTo(ip1));
+         assertEquals(1, ip3.compareTo(ip2));
+         assertEquals(0, ip3.compareTo(ip33));
+     }
+
+     @Test
+     public void equalsTest() throws ParseException {
+         Object o = new Object();
+         assertEquals(ip2, ip22);
+         assertNotEquals(ip2, ip3);
+         assertNotEquals(ip2, o);
+     }
+
+     @Test
+     public void toStringTest() throws ParseException {
+         assertEquals("0.0.0.0", ip1.toString());
+         assertEquals("0.255.0.255", new IP("0.255.0.255").toString());
+         assertEquals("211.1.1.1", ip2.toString());
+         assertEquals("255.255.255.255", ip3.toString());
+         assertEquals("54.97.43.123", ip4.toString());
+     }
+ }
 }

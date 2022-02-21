@@ -1,4 +1,4 @@
-package src.parsing;
+package src.tests;
 import org.junit.*;
 import src.exceptions.ParseException;
 import src.parsing.BracketNotationParser;
