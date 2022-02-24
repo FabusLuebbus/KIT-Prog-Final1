@@ -54,7 +54,7 @@ public class OldBracketNotationParser {
 
     private void match(String expected) throws IOException, ParseException {
         if (!lookahead.equals(expected)) {
-            throw new ParseException(1);
+            //throw new ParseException(1);
         } else {
             next();
         }
@@ -63,7 +63,7 @@ public class OldBracketNotationParser {
     private void matchIP() throws ParseException {
         //checking for invalid IP-syntax / double entries
         if (!lookahead.matches(IP_PATTERN) || addedIPs.contains(lookahead)) {
-            throw new ParseException(2);
+            //throw new ParseException(2);
         } else {
             //creating new node from IP and adding it to nodes, adding its production root as adjacent node if existent
             IP node = new IP(lookahead);
@@ -94,7 +94,7 @@ public class OldBracketNotationParser {
         which makes such checks impossible.
          */
         if (bracketNotation.matches(".* {2}.*|.*\\( .*|.* \\).*") || bracketNotation.length() < 17) {
-            throw new ParseException(3);
+            //throw new ParseException(3);
         }
         //replacing '(' with '( ' and ')' with ' )' so brackets will be independent tokens as well as IPs
         String editedBracketNotation = bracketNotation.replace("(", "( ").replace(")", " )");
@@ -111,7 +111,7 @@ public class OldBracketNotationParser {
         match(")");
         //finished parsing. now checking if input stream also ended. If yes input was successfully parsed.
         if (tokenizer.ttype != StreamTokenizer.TT_EOF) {
-            throw new ParseException(4);
+            //throw new ParseException(4);
         }
     }
 

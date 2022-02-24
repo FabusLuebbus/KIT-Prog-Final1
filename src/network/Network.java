@@ -1,15 +1,22 @@
 package src.network;
 
+import src.exceptions.ErrorMessages;
 import src.exceptions.ParseException;
 import src.ip.IP;
 import src.parsing.BracketNotationParser;
 import src.printing.BracketNotationPrinter;
+import static src.network.NetworkUtil.getIPFromList;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
 
 public class Network {
-    private  List<IP> nodes = new LinkedList<>();
+    private List<IP> nodes = new LinkedList<>();
 
     /**
      * generates a network of height 1. links all children to root and the other way round
@@ -22,11 +29,13 @@ public class Network {
         if (root == null || children == null) { throw new IllegalArgumentException("argument not instantiated."); }
 
         //generating mutable deep copy of children
-        List<IP> childrenCopy = deepCopy(children);
+        List<IP> childrenCopy = NetworkUtil.deepCopy(children);
         if (childrenCopy.size() == 0) {
             throw new IllegalArgumentException("please provide a valid List of children");
         }
         //adding all children to nodes with root as their only adjacent node, if child is already added throw exception
+        nodes.add(root);
+        root.addAdjacentNodeCollection(childrenCopy);
         for (IP child : childrenCopy) {
             if (nodes.contains(child)) {
                 throw new IllegalArgumentException("Duplicate entry in child list");
@@ -34,10 +43,8 @@ public class Network {
             nodes.add(child);
             child.addAdjacentNode(root);
         }
-        nodes.add(root);
-        root.addAdjacentNodeCollection(childrenCopy);
         //check if tree is valid
-        if (!networkIsValid(List.copyOf(nodes))) {
+        if (!NetworkUtil.networkIsValid(List.copyOf(nodes))) {
             throw new IllegalArgumentException("Not a valid tree topology");
         }
     }
@@ -51,12 +58,15 @@ public class Network {
      * @throws ParseException if parser fails to parse input
      */
     public Network(final String bracketNotation) throws ParseException {
+        if (bracketNotation == null) {
+            throw new ParseException(ErrorMessages.INVALID_BRACKET_NOTATION);
+        }
         //trying to parse bracketNotation
         BracketNotationParser parser = new BracketNotationParser();
         try {
             parser.parse(bracketNotation);
         } catch (IOException e) {
-            throw new ParseException(0);
+            throw new ParseException(ErrorMessages.INVALID_BRACKET_NOTATION);
         }
         /*
         parsed successfully. since parser returns nodes only pointing at their 'production root' we have to complete
@@ -71,7 +81,7 @@ public class Network {
     }
 
     /**
-     * Tries to add new subnet to this Network. Checks validity of new Network using {@link #networkIsValid(List)}.
+     * Tries to add new subnet to this Network. Checks validity of new Network using networkIsValid.
      * If new network is not valid no changes are made on this Network
      *
      * @param subnet the network to be added to this network
@@ -82,9 +92,9 @@ public class Network {
             return false;
         }
         //creating temporary nodes list to simulate adding of subnet
-        List<IP> tempNodesList = deepCopy(nodes);
+        List<IP> tempNodesList = NetworkUtil.deepCopy(nodes);
         // create deep copy list of subnet.nodes
-        List<IP> subnetNodes = deepCopy(subnet.nodes);
+        List<IP> subnetNodes = NetworkUtil.deepCopy(subnet.nodes);
         boolean networkChanged = true;
         boolean addedNewNodes = false;
 
@@ -127,19 +137,19 @@ public class Network {
             }
         }
         //check if adding would destroy tree
-        if (!networkIsValid(tempNodesList)) {
+        if (!NetworkUtil.networkIsValid(tempNodesList)) {
             return false;
         }
         //checking if anything changed
 
         if (!addedNewNodes) {
             networkChanged = false;
-            outerloop:
+            outerLoop:
             for (IP node : tempNodesList) {
                 for (IP adjNode : node.getAdjacentNodes()) {
                     if (!getIPFromList(node, nodes).getAdjacentNodes().contains(getIPFromList(adjNode, nodes))) {
                         networkChanged = true;
-                        break outerloop;
+                        break outerLoop;
                     }
                 }
             }
@@ -156,34 +166,36 @@ public class Network {
      * @return sorted nodes list
      */
     public List<IP> list() {
-        List<IP> sortedNodes = deepCopy(nodes);
+        List<IP> sortedNodes = NetworkUtil.deepCopy(nodes);
         Collections.sort(sortedNodes);
         return sortedNodes;
     }
 
     public boolean connect(final IP ip1, final IP ip2) {
-        if (ip1 != null && ip2 != null && !ip1.equals(ip2) && nodes.contains(ip1) && nodes.contains(ip2)) {
-            List<IP> currentNodes = new ArrayList<>(nodes);
-            getIPFromList(ip1, currentNodes).addAdjacentNode(getIPFromList(ip2, currentNodes));
-            getIPFromList(ip2, currentNodes).addAdjacentNode(getIPFromList(ip1, currentNodes));
-            if (networkIsValid(currentNodes)) {
-                return true;
-            }
-            getIPFromList(ip1, currentNodes).getAdjacentNodes().remove(getIPFromList(ip2, currentNodes));
-            getIPFromList(ip2, currentNodes).getAdjacentNodes().remove(getIPFromList(ip1, currentNodes));
+        if (ip1 == null || ip2 == null || ip1.equals(ip2) || !nodes.contains(ip1) || !nodes.contains(ip2)
+                || getIPFromList(ip1, nodes).getAdjacentNodes().contains(getIPFromList(ip2, nodes))) {
+            return false;
         }
+        getIPFromList(ip1, nodes).addAdjacentNode(getIPFromList(ip2, nodes));
+        getIPFromList(ip2, nodes).addAdjacentNode(getIPFromList(ip1, nodes));
+        if (NetworkUtil.networkIsValid(nodes)) {
+            return true;
+
+        }
+        getIPFromList(ip1, nodes).getAdjacentNodes().remove(getIPFromList(ip2, nodes));
+        getIPFromList(ip2, nodes).getAdjacentNodes().remove(getIPFromList(ip1, nodes));
         return false;
     }
 
     public boolean disconnect(final IP ip1, final IP ip2) {
         if (ip1 == null || ip2 == null || ip1.equals(ip2) || !nodes.contains(ip1) || !nodes.contains(ip2)
-                || (ip1.getAdjacentNodes().size() == 1 && ip2.getAdjacentNodes().size() == 1) ) {
+                || !getIPFromList(ip1, nodes).getAdjacentNodes().contains(getIPFromList(ip2, nodes))
+                || nodes.size() == 2) {
             return false;
         }
         List<IP> currentNodes = new ArrayList<>(nodes);
         Set<IP> ip1AdjNodes = getIPFromList(ip1, currentNodes).getAdjacentNodes();
         Set<IP> ip2AdjNodes = getIPFromList(ip2, currentNodes).getAdjacentNodes();
-
 
         ip1AdjNodes.remove(getIPFromList(ip2, currentNodes));
         ip2AdjNodes.remove(getIPFromList(ip1, currentNodes));
@@ -197,283 +209,44 @@ public class Network {
     }
 
     public boolean contains(final IP ip) {
-        for (IP node : nodes) {
-            node.setVisited(false);
+        /*if (ip == null) {
+            return false;
         }
-        //implement queue
-        Queue<IP> queue = new LinkedList<>();
-        //getting random root and setting up
-        IP root = List.copyOf(nodes).get(0);
-        queue.add(root);
-        root.setVisited(true);
-        //main loop
-        while (!queue.isEmpty()) {
-            IP current = queue.poll();
-            //mark all adjacent nodes and add them to queue
-            for (IP adjacentNode : current.getAdjacentNodes()) {
-                if (adjacentNode.equals(ip)) {
-                    return true;
-                }
-                if (!adjacentNode.getVisited()) {
-                    adjacentNode.setVisited(true);
-                    queue.add(adjacentNode);
-                }
-            }
-        }
-        return false;
+        return NetworkUtil.contains(ip, nodes);
+
+         */
+        return nodes.contains(ip);
     }
 
     public int getHeight(final IP root) {
-        if (root == null) {
+        if (root == null || !nodes.contains(root)) {
             return 0;
         }
-        for (IP node : nodes) {
-            node.setParent(null);
-        }
-        List<IP> currentNodes = new ArrayList<>(nodes);
-        IP currentRoot = getIPFromList(root, currentNodes);
-        return heightRecursion(currentRoot) - 1;
-    }
-
-    private static int heightRecursion(final IP root) {
-        int currentHeight = 0;
-        for (IP adjacentNode : root.getAdjacentNodes()) {
-            if (adjacentNode.getParent() == null) {
-                adjacentNode.setParent(root);
-            }
-            if (!adjacentNode.equals(root.getParent())) {
-
-                currentHeight = Math.max(currentHeight, heightRecursion(adjacentNode));
-            }
-        }
-        return ++currentHeight;
+        return NetworkUtil.getHeight(root, nodes);
     }
 
     public List<List<IP>> getLevels(final IP root) {
-        List<List<IP>> output = getLevelsUnsorted(root);
+        List<List<IP>> output = NetworkUtil.getLevelsUnsorted(root, nodes);
         for (List<IP> level : output) {
             Collections.sort(level);
         }
         return output;
     }
 
-    private List<List<IP>> getLevelsUnsorted(IP root) {
-        List<List<IP>> output = new LinkedList<>();
-        if (!nodes.contains(root)) {
-            return output;
-        }
-        List<IP> currentNodes;
-
-        currentNodes = deepCopy(nodes);
-
-        int currLevel = 0;
-        output.add(new LinkedList<>());
-        //start
-        for (IP node : currentNodes) {
-            node.setParent(null);
-            node.setVisited(false);
-            //node.setLevel(0);
-        }
-        //implement queue
-        Queue<Object> queue = new LinkedList<>();
-        String levelMarker = "";
-        //getting random root and setting up
-        queue.add(getIPFromList(root, currentNodes));
-        queue.add(levelMarker);
-        getIPFromList(root, currentNodes).setVisited(true);
-        IP current;
-        //main loop
-        while (!queue.isEmpty()) {
-            if (queue.peek().equals(levelMarker)) {
-                currLevel++;
-                output.add(new LinkedList<>());
-                queue.poll();
-            }
-            if (queue.peek() != null && queue.peek().equals(levelMarker)) {
-                output.remove(output.size() - 1);
-                break;
-            }
-            if (queue.peek() == null) {
-                break;
-            }
-            current = (IP) queue.poll();
-            output.get(currLevel).add(current);
-            //mark all adjacent nodes and add them to queue
-            for (IP adjacentNode : current.getAdjacentNodes()) {
-                if (!adjacentNode.getVisited() && !adjacentNode.equals(current.getParent())) {
-                    adjacentNode.setVisited(true);
-                    adjacentNode.setParent(current);
-                    adjacentNode.setLevel(currLevel + 1);
-                    queue.add(adjacentNode);
-                }
-            }
-            if (queue.peek() != null && queue.peek().equals(levelMarker)) {
-                queue.add(levelMarker);
-            }
-        }
-        return output;
-    }
-
     public List<IP> getRoute(final IP start, final IP end) {
-        if (start == null || end == null || start.equals(end)) {
+        if (start == null || end == null || start.equals(end) || !nodes.contains(start) || !nodes.contains(end)) {
             return new LinkedList<>();
         }
-        for (IP node : nodes) {
-            node.setParent(null);
-            node.setVisited(false);
-        }
-        //implement queue
-        Queue<IP> queue = new LinkedList<>();
-        List<IP> output = new LinkedList<>();
-        IP root = getIPFromList(start, List.copyOf(nodes));
-        queue.add(root);
-        root.setVisited(true);
-        IP current = root;
-        //main loop
-        while (!queue.isEmpty()) {
-            current = queue.poll();
-            //mark all adjacent nodes and add them to queue
-            for (IP adjacentNode : current.getAdjacentNodes()) {
-                if (adjacentNode.equals(end)) {
-                    adjacentNode.setParent(current);
-                    current = adjacentNode;
-                    queue.clear();
-                    break;
-                }
-                if (!adjacentNode.getVisited() && !adjacentNode.equals(current.getParent())) {
-                    adjacentNode.setParent(current);
-                    adjacentNode.setVisited(true);
-                    queue.add(adjacentNode);
-                }
-            }
-        }
-        if (!current.equals(end)) {
-            return new LinkedList<>();
-        }
-        //current state we found end. And by using parent attributes path is already found
-        output.add(0, current);
-        while (!current.equals(start)) {
-            output.add(0, current.getParent());
-            current = current.getParent();
-        }
-        return deepCopy(output);
+        return NetworkUtil.getRoute(start, end, nodes);
     }
 
     public String toString(IP root) {
-        if (root == null) {
+        if (root == null || !nodes.contains(root)) {
             return "";
         }
         IP thisRoot = getIPFromList(root, List.copyOf(nodes));
         BracketNotationPrinter printer = new BracketNotationPrinter();
-        printer.print(getLevelsUnsorted(thisRoot));
+        printer.print(NetworkUtil.getLevelsUnsorted(thisRoot, nodes));
         return printer.getBracketNotation();
     }
-
-    /**
-     *  checks a network for validity. A network is considered invalid if one of the following states appears:
-     *          - one of the nodes has no adjacent node
-     *          - there are cyclic routes / 2 different routes from one node to another
-     *
-     *  The network is evaluated using an implementation of breadth first search following these steps:
-     *          - set all node's parent to null and visited parameter to false
-     *          - find random node to begin with (root) and set visited to true
-     *       -> - add all adjacent nodes to queue and set their parent to current node / visited to true
-     * loop |   - add all adjacent nodes to seperate visitedNodes Set
-     *       -- - get new current node from queue
-     *
-     *  the last 3 steps are repeated until queue is empty or:
-     *          - one node has 0 adjacent nodes (return false)
-     *          - if one of current node's adjacent nodes is visited but not current node's parent (return false)
-     *          
-     *  if the algorithm was not interrupted and queue is empty visitedNodes Set is compared to nodes List.
-     *  If all nodes were visited return true, else create List of missing nodes and
-     *  call networkIsValid on missing nodes.
-     *  Repeat recursion until return true
-     *
-     * @param nodes List of nodes to be evaluated
-     * @return whether nodes represents a valid network
-     */
-    private boolean networkIsValid(List<IP> nodes) {
-        //reset parameters of nodes
-        for (IP node : nodes) {
-            node.setParent(null);
-            node.setVisited(false);
-        }
-        //implement queue
-        Queue<IP> queue = new LinkedList<>();
-        Set<IP> visitedNodes = new HashSet<>();
-        //getting random root and setting up
-        IP root = nodes.get(0);
-        queue.add(root);
-        root.setVisited(true);
-        visitedNodes.add(root);
-        //main loop
-        while (!queue.isEmpty()) {
-            IP current = queue.poll();
-            //check for isolated nodes
-            if (current.getAdjacentNodes().isEmpty()) {
-                return false;
-            }
-            //mark all adjacent nodes and add them to queue
-            for (IP adjacentNode : current.getAdjacentNodes()) {
-                if (!adjacentNode.getVisited()) {
-                    adjacentNode.setVisited(true);
-                    visitedNodes.add(adjacentNode);
-                    adjacentNode.setParent(current);
-                    queue.add(adjacentNode);
-                } else if (adjacentNode.getVisited() && !adjacentNode.equals(current.getParent())) {
-                    return false; //checking for double paths / cycles
-                }
-            }
-        }
-        //checking if all nodes were reached if not start recursion at missing nodes
-        if (visitedNodes.containsAll(nodes)) {
-            return true;
-        }
-        //transfer all missing nodes into one list
-        List<IP> notVisited = new LinkedList<>();
-        for (IP node : nodes) {
-            if (!visitedNodes.contains(node)) {
-                notVisited.add(node);
-            }
-        }
-        //check list of not visited nodes for integrity using recursion
-        return networkIsValid(notVisited);
-    }
-
-    private static IP getIPFromList(IP ip, List<IP> list) {
-        return list.get(list.indexOf(ip));
-    }
-
-    private static List<IP> deepCopy(Collection<IP> nodes) {
-        List<IP> nodesCopy = new LinkedList<>();
-        for (IP node : nodes) {
-            IP nodeClone;
-            try {
-                nodeClone = new IP(node.toString());
-            } catch (ParseException | NullPointerException e) {
-                return new ArrayList<>();
-            }
-            nodesCopy.add(nodeClone);
-        }
-
-        for (IP node : nodes) {
-            if (nodesCopy.contains(node)) {
-                //making sure to reference clone in List
-                IP nodeClone = getIPFromList(node, nodesCopy);
-                IP adjNodeClone;
-                //iterating over original node's adjacency list to provide copy as adjacency list to clones
-                for (IP adjacentNode : node.getAdjacentNodes()) {
-                    if (nodesCopy.contains(adjacentNode)) {
-                        adjNodeClone = getIPFromList(adjacentNode, nodesCopy);
-                        nodeClone.addAdjacentNode(adjNodeClone);
-                        adjNodeClone.addAdjacentNode(nodeClone);
-                    }
-                }
-            }
-        }
-        return nodesCopy;
-    }
-
-    //TODO use same find method in contains and get route
 }

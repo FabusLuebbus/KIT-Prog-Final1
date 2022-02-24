@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import static src.exceptions.ErrorMessages.IP_SYNTAX_ERROR;
+
 /**
  * class to provide functionality regarding IP-Addresses
  *
@@ -37,7 +39,7 @@ public class IP implements Comparable<IP> {
      */
     public IP(final String pointNotation) throws ParseException {
         if (pointNotation == null || (!pointNotation.matches(IP_PATTERN))) {
-            throw new ParseException(5);
+            throw new ParseException(IP_SYNTAX_ERROR);
         }
 
         String[] pointNotationArray = pointNotation.split("\\.");

@@ -2,6 +2,7 @@ package src.parsing;
 
 import src.exceptions.ParseException;
 import src.ip.IP;
+import src.exceptions.ErrorMessages;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -48,8 +49,8 @@ public class BracketNotationParser {
     }
 
     private void match(String expected) throws IOException, ParseException {
-        if (!lookahead.equals(expected)) {
-            throw new ParseException(1);
+        if (lookahead == null || !lookahead.equals(expected)) {
+            throw new ParseException(ErrorMessages.EXPECTED_BRACKET);
         } else {
             next();
         }
@@ -57,8 +58,8 @@ public class BracketNotationParser {
 
     private void matchIP() throws ParseException, IOException {
         //checking for invalid IP-syntax / double entries
-        if (!lookahead.matches(IP_PATTERN) || addedIPs.contains(lookahead)) {
-            throw new ParseException(2);
+        if (lookahead == null || !lookahead.matches(IP_PATTERN) || addedIPs.contains(lookahead)) {
+            throw new ParseException(ErrorMessages.IP_MATCHING_ERROR);
         } else {
             //creating new node from IP and adding it to nodes, adding its production root as adjacent node if existent
             IP node = new IP(lookahead);
@@ -85,12 +86,13 @@ public class BracketNotationParser {
          * @throws ParseException when syntax is broken
          */
     public void parse(String bracketNotation) throws IOException, ParseException {
-        /*initial checks on string with 17 being minimal length for valid bracket notations ((X.X.X.X X.X.X.X) -> 7+7+3)
+        /*
         checking for multiple whitespace since they are to be removed when tokenizing string
         which makes such checks impossible.
          */
-        if (bracketNotation.matches(".* {2}.*|.*\\( .*|.* \\).*") || bracketNotation.length() < 17) {
-            throw new ParseException(3);
+        if (bracketNotation.matches(".* {2}.*|.*\\( .*|.* \\).*|^$") || ' ' == (bracketNotation.charAt(0))
+                || ' ' == (bracketNotation.charAt(bracketNotation.length() - 1))) {
+            throw new ParseException(ErrorMessages.WHITESPACE_ERROR);
         }
         //replacing '(' with '( ' and ')' with ' )' so brackets will be independent tokens as well as IPs
         String editedBracketNotation = bracketNotation.replace("(", "( ").replace(")", " )");
@@ -110,7 +112,7 @@ public class BracketNotationParser {
         match(")");
         //finished parsing. now checking if input stream also ended. If yes input was successfully parsed.
         if (tokenizer.ttype != StreamTokenizer.TT_EOF) {
-            throw new ParseException(4);
+            throw new ParseException(ErrorMessages.WHITESPACE_ERROR);
         }
     }
 
@@ -118,7 +120,7 @@ public class BracketNotationParser {
         following methods simply represent the base grammar's productions
          */
     private void parseBracketContent() throws IOException, ParseException {
-        if (lookahead.equals("(")) {
+        if (lookahead != null && lookahead.equals("(")) {
             next();
             matchIP();
             IP currentRoot = nodes.get(nodes.size() - 1);
@@ -129,7 +131,7 @@ public class BracketNotationParser {
         } else {
             matchIP();
         }
-        if (!lookahead.equals(")")) {
+        if (lookahead != null && !lookahead.equals(")")) {
             parseBracketContent();
         } else {
             nestingDepth--;

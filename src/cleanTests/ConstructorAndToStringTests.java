@@ -134,5 +134,9 @@ public class ConstructorAndToStringTests {
                 network.toString(new IP("85.193.148.81")));
     }
 
+    @Test(expected = ParseException.class)
+    public void leadingWhitespaceTest() throws ParseException {
+        Network network = new Network(" (1.1.1.1 2.2.2.2)");
+    }
     
 }
