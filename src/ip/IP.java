@@ -36,7 +36,7 @@ public class IP implements Comparable<IP> {
      * @throws ParseException if ipAddress does not match proper point Notation(IP_PATTERN)
      */
     public IP(final String pointNotation) throws ParseException {
-        if ((!pointNotation.matches(IP_PATTERN))) {
+        if (pointNotation == null || (!pointNotation.matches(IP_PATTERN))) {
             throw new ParseException(5);
         }
 

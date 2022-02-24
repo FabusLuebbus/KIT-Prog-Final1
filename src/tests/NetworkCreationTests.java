@@ -48,7 +48,8 @@ public class NetworkCreationTests {
 
     }
 
-    @Test public void nullChildTest() throws ParseException {
+    @Test(expected = IllegalArgumentException.class)
+    public void nullChildTest() throws ParseException {
         IP ip = null;
         List<IP> list = new LinkedList<>();
         list.add(ip);

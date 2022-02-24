@@ -69,7 +69,7 @@ parser.parse("  ");
     @Test
     public void bracketNetworkConstructorTest() throws ParseException {
         //Network network = new Network("(85.193.148.255 (141.255.1.133 122.117.67.158 0.146.197.108) 34.49.145.239 (231.189.0.127 77.135.84.171 39.20.222.120 252.29.23.0 116.132.83.77))");
-        Network network = new Network("(0.0.0.0 (1.1.1.1 (2.2.2.2 (3.3.3.3 (4.4.4.4 (5.5.5.5))))))");
+        Network network = new Network("(0.0.0.0 (1.1.1.1 (2.2.2.2 (3.3.3.3 (4.4.4.4 5.5.5.5)))))");
 
     }
 
@@ -94,10 +94,10 @@ parser.parse("  ");
         assertFalse(network1.connect(new IP("85.193.148.255"), new IP("0.146.197.108")));
         assertTrue(network1.disconnect(new IP("1.1.1.1"),  new IP("3.3.3.3")));
         assertTrue(network1.disconnect(new IP("1.1.1.1"),  new IP("0.0.0.0")));
-        assertFalse(network1.disconnect(new IP("0.0.0.0"),  new IP("2.2.2.2")));
+        assertTrue(network1.disconnect(new IP("0.0.0.0"),  new IP("2.2.2.2")));
         assertTrue(network1.disconnect(new IP("6.6.6.6"),  new IP("3.3.3.3")));
         assertTrue(network1.disconnect(new IP("4.4.4.4"),  new IP("3.3.3.3")));
-        assertFalse(network1.disconnect(new IP("4.4.4.4"),  new IP("5.5.5.5")));
+        assertTrue(network1.disconnect(new IP("4.4.4.4"),  new IP("5.5.5.5")));
     }
 
     @Test
@@ -127,6 +127,7 @@ parser.parse("  ");
     public void getRouteTest() throws ParseException {
         Network network = new Network("(85.193.148.255 (141.255.1.133 122.117.67.158 0.146.197.108) 34.49.145.239 (231.189.0.127 77.135.84.171 39.20.222.120 252.29.23.0 116.132.83.77) 9.9.9.9 8.8.8.8 7.7.7.7 6.6.6.6 5.5.5.5 1.1.1.1 4.4.4.4 3.3.3.3 2.2.2.2)");
         network.getRoute(new IP("77.135.84.171"), new IP("122.117.67.158"));
+        assertEquals(0, network.getRoute(new IP("85.193.148.255"), new IP("85.193.148.255")).size());
     }
 
     @Test

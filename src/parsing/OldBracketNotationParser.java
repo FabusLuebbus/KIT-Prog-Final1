@@ -7,23 +7,29 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
+ * Top-down parser used to parse String containing network in network topology. While parsing BracketNotationParsers
+ * check for syntactic validity and gather a list of nodes with every node pointing towards its direct production root
+ * via adjacentNodes Set.
+ *
+ * following grammar was base for the parser though it was minimally changed to fix minor inaccuracies:
+ *      - nonterminals = {S, BRACKETCONTENT(BC), SECONDARYBRACKETCONTENT(SBC), IP, SECONDARYIP(SIP)}
+ *      - terminals = { '(' , 'ip' , ')' }, starting symbol = 'S'
+ *      - productions = {
+ *          (S -> (BC)), (BC -> ipIP | ip(BC)IP), (IP -> ipIP | ip(BC)IP | ε)
+ *      }
  *
  * @author usmsk
- * @version 3.0
+ * @version 1.0
  */
-public class BracketNotationParser {
-
+public class OldBracketNotationParser {
     /**
      * regex to check input tokens supposed to be IPs for syntax
      */
     public static final String IP_PATTERN = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])"
-                + "(\\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])){3})$";
+            + "(\\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])){3})$";
 
     private String lookahead;
     private StreamTokenizer tokenizer;
@@ -35,7 +41,6 @@ public class BracketNotationParser {
 
     /**
      * getter method for product of parsing bracketNotation
-     *
      * @return Set of nodes
      */
     public List<IP> getNodes() {
@@ -55,7 +60,7 @@ public class BracketNotationParser {
         }
     }
 
-    private void matchIP() throws ParseException, IOException {
+    private void matchIP() throws ParseException {
         //checking for invalid IP-syntax / double entries
         if (!lookahead.matches(IP_PATTERN) || addedIPs.contains(lookahead)) {
             throw new ParseException(2);
@@ -68,22 +73,21 @@ public class BracketNotationParser {
             addedIPs.add(lookahead);
             nodes.add(node);
         }
-        next();
     }
 
     /**
-         * initial method to be called when parsing a bracket notation.
-         * Does some syntax checks only possible on string form of input, then uses {@link StreamTokenizer} to split input
-         * into tokens.
-         * then begins parsing descent by matching '(' and calling parseBracketContent after recursion ends two conditions
-         * have to be met in order to have successfully parsed the inputString:
-         * - there must be a ')' left to match
-         * - after ')' the current token must be TT_EOF(token type indicating end of input stream is reached)
-         *
-         * @param bracketNotation input string containing supposed network topology
-         * @throws IOException    when a {@link StreamTokenizer} action fails
-         * @throws ParseException when syntax is broken
-         */
+     * initial method to be called when parsing a bracket notation.
+     * Does some syntax checks only possible on string form of input, then uses {@link StreamTokenizer} to split input
+     * into tokens.
+     * then begins parsing descent by matching '(' and calling parseBracketContent after recursion ends two conditions
+     * have to be met in order to have successfully parsed the inputString:
+     *      - there must be a ')' left to match
+     *      - after ')' the current token must be TT_EOF(token type indicating end of input stream is reached)
+     *
+     * @param bracketNotation input string containing supposed network topology
+     * @throws IOException when a {@link StreamTokenizer} action fails
+     * @throws ParseException when syntax is broken
+     */
     public void parse(String bracketNotation) throws IOException, ParseException {
         /*initial checks on string with 17 being minimal length for valid bracket notations ((X.X.X.X X.X.X.X) -> 7+7+3)
         checking for multiple whitespace since they are to be removed when tokenizing string
@@ -103,9 +107,6 @@ public class BracketNotationParser {
         next();
         //starting parsing
         match("(");
-        matchIP();
-        IP currentRoot = nodes.get(nodes.size() - 1);
-        roots.add(currentRoot);
         parseBracketContent();
         match(")");
         //finished parsing. now checking if input stream also ended. If yes input was successfully parsed.
@@ -115,27 +116,41 @@ public class BracketNotationParser {
     }
 
     /*
-        following methods simply represent the base grammar's productions
-         */
+    following methods simply represent the base grammar's productions
+     */
     private void parseBracketContent() throws IOException, ParseException {
+        matchIP();
+        if (firstTime) {
+            firstTime = false;
+        } else {
+            nestingDepth++;
+        }
+        IP currentRoot = nodes.get(nodes.size() - 1);
+        roots.add(currentRoot);
+        next();
         if (lookahead.equals("(")) {
             next();
-            matchIP();
-            IP currentRoot = nodes.get(nodes.size() - 1);
-            roots.add(currentRoot);
-            nestingDepth++;
             parseBracketContent();
             match(")");
-        } else {
-            matchIP();
-        }
-        if (!lookahead.equals(")")) {
-            parseBracketContent();
-        } else {
-            nestingDepth--;
             roots.remove(roots.size() - 1);
+            nestingDepth--;
+        }
+        parseIP();
+    }
+
+    private void parseIP() throws IOException, ParseException {
+        if (lookahead != null && lookahead.equals("(")) {
+            next();
+            parseBracketContent();
+            match(")");
+            roots.remove(roots.size() - 1);
+            nestingDepth--;
+        } else if (lookahead != null && !lookahead.equals(")")) {
+            matchIP();
+            next();
+        }
+        if (lookahead != null && !lookahead.equals(")")) {
+            parseIP();
         }
     }
 }
-
-

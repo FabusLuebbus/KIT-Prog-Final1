@@ -7,7 +7,8 @@ public enum ErrorMessages {
 
     IP_MATCHING_ERROR("Wrong IP syntax / Expected IP but received different token / Duplicate entry of IP"),
 
-    WHITESPACE_ERROR("Too many consecutive whitespaces / Wrong whitespaces around brackets."),
+    WHITESPACE_ERROR("Too many consecutive whitespaces / Wrong whitespaces around brackets / "
+            + "minimal string length not reached."),
 
     NUMBER_OF_BRACKETS("Check number of opening and closing brackets."),
 

@@ -110,12 +110,28 @@ public class ConstructorAndToStringTests {
         assertEquals("(10.10.10.10 (0.0.0.0 (1.1.1.1 2.2.2.2 7.7.7.7) (3.3.3.3 4.4.4.4 8.8.8.8) (5.5.5.5 6.6.6.6 9.9.9.9)))", network2.toString(new IP("10.10.10.10")));
     }
 
+    @Test(expected = ParseException.class)
+    public void creationFail() throws ParseException {
+        Network network = new Network("(1.1.1.1 (2.2.2.2 3.3.3.3) 4.4.4.4 (5.5.5.5))");
+    }
+
     @Test
     public void addTests() throws ParseException {
         Network network = new Network(DEEPLY_NESTED);
         Network network1 = new Network(NETWORK_FROM_EXAMPLE);
-
         assertFalse(network.add(new Network("(0.0.0.0 1.1.1.1)")));
+        assertFalse(network.add(new Network("(1.1.1.1 2.2.2.2)")));
+        assertFalse(network.add(new Network("(2.2.2.2 3.3.3.3)")));
+        assertFalse(network.add(new Network("(3.3.3.3 4.4.4.4)")));
+        assertFalse(network.add(new Network("(4.4.4.4 5.5.5.5)")));
+        assertFalse(network.add(new Network("(5.5.5.5 6.6.6.6)")));
+        assertFalse(network.add(new Network("(6.6.6.6 7.7.7.7)")));
+        assertTrue(network.add(network1));
+        assertEquals("(85.193.148.81 34.49.145.239 (141.255.1.133 0.146.197.108 122.117.67.158) (231.189.0.127 39.20.222.120 77.135.84.171 116.132.83.77 252.29.23.0))", network.toString(new IP("85.193.148.81")));
+        assertTrue(network.add(new Network("(77.135.84.171 4.4.4.4)")));
+        assertEquals("(85.193.148.81 34.49.145.239 (141.255.1.133 0.146.197.108 122.117.67.158) (231.189.0.127 39.20.222.120 "
+                + "(77.135.84.171 (4.4.4.4 (3.3.3.3 (2.2.2.2 (1.1.1.1 0.0.0.0))) (5.5.5.5 (6.6.6.6 7.7.7.7)))) 116.132.83.77 252.29.23.0))",
+                network.toString(new IP("85.193.148.81")));
     }
 
     

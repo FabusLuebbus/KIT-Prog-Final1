@@ -78,10 +78,14 @@ public class Network {
      * @return  whether the network was successfully changed
      */
     public boolean add(final Network subnet) {
+        if (subnet == null) {
+            return false;
+        }
         //creating temporary nodes list to simulate adding of subnet
         List<IP> tempNodesList = deepCopy(nodes);
         // create deep copy list of subnet.nodes
         List<IP> subnetNodes = deepCopy(subnet.nodes);
+        boolean networkChanged = true;
         boolean addedNewNodes = false;
 
         //current state: created temporary testing list of nodes
@@ -127,8 +131,9 @@ public class Network {
             return false;
         }
         //checking if anything changed
-        boolean networkChanged = false;
+
         if (!addedNewNodes) {
+            networkChanged = false;
             outerloop:
             for (IP node : tempNodesList) {
                 for (IP adjNode : node.getAdjacentNodes()) {
@@ -171,14 +176,15 @@ public class Network {
     }
 
     public boolean disconnect(final IP ip1, final IP ip2) {
+        if (ip1 == null || ip2 == null || ip1.equals(ip2) || !nodes.contains(ip1) || !nodes.contains(ip2)
+                || (ip1.getAdjacentNodes().size() == 1 && ip2.getAdjacentNodes().size() == 1) ) {
+            return false;
+        }
         List<IP> currentNodes = new ArrayList<>(nodes);
         Set<IP> ip1AdjNodes = getIPFromList(ip1, currentNodes).getAdjacentNodes();
         Set<IP> ip2AdjNodes = getIPFromList(ip2, currentNodes).getAdjacentNodes();
 
-        if (ip1 == null || ip1.equals(ip2) || !nodes.contains(ip1) || !nodes.contains(ip2)
-                || (ip1AdjNodes.size() == 1 && ip2AdjNodes.size() == 1) ) {
-            return false;
-        }
+
         ip1AdjNodes.remove(getIPFromList(ip2, currentNodes));
         ip2AdjNodes.remove(getIPFromList(ip1, currentNodes));
         if (ip1AdjNodes.size() == 0) {
@@ -218,6 +224,9 @@ public class Network {
     }
 
     public int getHeight(final IP root) {
+        if (root == null) {
+            return 0;
+        }
         for (IP node : nodes) {
             node.setParent(null);
         }
@@ -306,6 +315,9 @@ public class Network {
     }
 
     public List<IP> getRoute(final IP start, final IP end) {
+        if (start == null || end == null || start.equals(end)) {
+            return new LinkedList<>();
+        }
         for (IP node : nodes) {
             node.setParent(null);
             node.setVisited(false);
@@ -348,6 +360,9 @@ public class Network {
     }
 
     public String toString(IP root) {
+        if (root == null) {
+            return "";
+        }
         IP thisRoot = getIPFromList(root, List.copyOf(nodes));
         BracketNotationPrinter printer = new BracketNotationPrinter();
         printer.print(getLevelsUnsorted(thisRoot));
