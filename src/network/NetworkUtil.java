@@ -16,52 +16,6 @@ public final class NetworkUtil {
     private NetworkUtil() {
     }
 
-    public static boolean contains(IP ip, List<IP> nodes) {
-        Set<IP> visitedNodes = new HashSet<>();
-        for (IP node : nodes) {
-            node.setParent(null);
-            node.setVisited(false);
-        }
-        //implement queue
-        Queue<IP> queue = new LinkedList<>();
-        //getting random root and setting up
-        IP root = List.copyOf(nodes).get(0);
-        if (root.equals(ip)) {
-            return true;
-        }
-        queue.add(root);
-        root.setVisited(true);
-        visitedNodes.add(root);
-        //main loop
-        while (!queue.isEmpty()) {
-            IP current = queue.poll();
-            //mark all adjacent nodes and add them to queue
-            for (IP adjacentNode : current.getAdjacentNodes()) {
-                if (!adjacentNode.equals(current.getParent()) && adjacentNode.equals(ip)) {
-                    return true;
-                }
-                if (!adjacentNode.getVisited() && !adjacentNode.equals(current.getParent())) {
-                    adjacentNode.setVisited(true);
-                    adjacentNode.setParent(current);
-                    queue.add(adjacentNode);
-                    visitedNodes.add(adjacentNode);
-                }
-            }
-        }
-        if (visitedNodes.containsAll(nodes)) {
-            return false;
-        }
-        //transfer all missing nodes into one list
-        List<IP> notVisited = new LinkedList<>();
-        for (IP node : nodes) {
-            if (!visitedNodes.contains(node)) {
-                notVisited.add(node);
-            }
-        }
-        //check list of not visited nodes for integrity using recursion
-        return contains(ip, notVisited);
-    }
-
     public static int getHeight(IP root, List<IP> nodes) {
         for (IP node : nodes) {
             node.setParent(null);
@@ -87,7 +41,7 @@ public final class NetworkUtil {
 
     public static List<List<IP>> getLevelsUnsorted(IP root, List<IP> nodes) {
         List<List<IP>> output = new LinkedList<>();
-        if (!nodes.contains(root)) {
+        if (!nodes.contains(root) || root == null) {
             return output;
         }
         List<IP> currentNodes;

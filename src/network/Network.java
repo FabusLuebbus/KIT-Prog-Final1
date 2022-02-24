@@ -209,13 +209,7 @@ public class Network {
     }
 
     public boolean contains(final IP ip) {
-        /*if (ip == null) {
-            return false;
-        }
-        return NetworkUtil.contains(ip, nodes);
-
-         */
-        return nodes.contains(ip);
+        return nodes.contains(ip) && ip != null;
     }
 
     public int getHeight(final IP root) {
