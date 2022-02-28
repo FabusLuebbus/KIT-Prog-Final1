@@ -22,6 +22,7 @@ public class IP implements Comparable<IP> {
             + "(\\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])){3})$";
 
     private final long ipValue;
+    private final String pointNotation;
     //used in BFS not a final variable changes depending on interpretation
     private IP parent = null;
     //used in BFS
@@ -41,7 +42,7 @@ public class IP implements Comparable<IP> {
         if (pointNotation == null || (!pointNotation.matches(IP_PATTERN))) {
             throw new ParseException(IP_SYNTAX_ERROR);
         }
-
+        this.pointNotation = pointNotation;
         String[] pointNotationArray = pointNotation.split("\\.");
         StringBuilder ipAsBinary = new StringBuilder();
 
@@ -143,17 +144,7 @@ public class IP implements Comparable<IP> {
 
     @Override
     public String toString() {
-        String temp = Long.toBinaryString(ipValue);
-        temp = String.format("%32s", temp).replace(' ', '0');
-        StringBuilder output = new StringBuilder();
-        for (int i = 0; i < 4; i++) {
-            output.append(Long.parseLong(temp.substring(0, 8), 2));
-            if (i < 3) {
-                output.append('.');
-            }
-            temp = temp.substring(8);
-        }
-        return output.toString();
+        return pointNotation;
     }
 
     @Override

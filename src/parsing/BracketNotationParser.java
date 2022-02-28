@@ -74,10 +74,10 @@ public class BracketNotationParser {
 
     /**
          * initial method to be called when parsing a bracket notation.
-         * Does some syntax checks only possible on string form of input, then uses {@link StreamTokenizer} to split input
-         * into tokens.
-         * then begins parsing descent by matching '(' and calling parseBracketContent after recursion ends two conditions
-         * have to be met in order to have successfully parsed the inputString:
+         * Does some syntax checks only possible on string form of input, then uses {@link StreamTokenizer} to split
+         * input into tokens.
+         * then begins parsing descent by matching '(' and calling parseBracketContent
+         * after recursion ends two conditions have to be met in order to have successfully parsed the inputString:
          * - there must be a ')' left to match
          * - after ')' the current token must be TT_EOF(token type indicating end of input stream is reached)
          *
@@ -112,7 +112,7 @@ public class BracketNotationParser {
         match(")");
         //finished parsing. now checking if input stream also ended. If yes input was successfully parsed.
         if (tokenizer.ttype != StreamTokenizer.TT_EOF) {
-            throw new ParseException(ErrorMessages.WHITESPACE_ERROR);
+            throw new ParseException(ErrorMessages.INVALID_BRACKET_NOTATION);
         }
     }
 

@@ -11,17 +11,31 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
-
+/**
+ * class which provides further methods and functions used in network. Main purpose of this class is to clean up code in
+ * Network and extracting methods which provide functionality useful for general trees (not only networks);
+ *
+ * @author usmsk
+ * @version 1.2
+ */
 public final class NetworkUtil {
     private NetworkUtil() {
     }
 
+    /**
+     * gets height of a tree in relation to given root by recursing to the lowest level of tree and counting while
+     * going back up
+     *
+     * @param root node which is to be used as root
+     * @param nodes List of nodes (the 'tree')
+     * @return height of tree (dependent on root)
+     */
     public static int getHeight(IP root, List<IP> nodes) {
         for (IP node : nodes) {
             node.setParent(null);
         }
         List<IP> currentNodes = new ArrayList<>(nodes);
-        IP currentRoot = getIPFromList(root, currentNodes);
+        IP currentRoot = listIP(root, currentNodes);
         return heightRecursion(currentRoot) - 1;
     }
 
@@ -39,6 +53,14 @@ public final class NetworkUtil {
         return ++currentHeight;
     }
 
+    /**
+     * checks if root is null or does not exist in nodes. If so an empty list is returned. Else gets List with
+     * a list at every entry containing one level of the tree each. This method uses a custom implementation of BFS
+     *
+     * @param root node which is to be used as root
+     * @param nodes List of nodes (the 'tree')
+     * @return list containing levels of deep copied nodes
+     */
     public static List<List<IP>> getLevelsUnsorted(IP root, List<IP> nodes) {
         List<List<IP>> output = new LinkedList<>();
         if (!nodes.contains(root) || root == null) {
@@ -60,9 +82,9 @@ public final class NetworkUtil {
         Queue<Object> queue = new LinkedList<>();
         String levelMarker = "";
         //getting random root and setting up
-        queue.add(getIPFromList(root, currentNodes));
+        queue.add(listIP(root, currentNodes));
         queue.add(levelMarker);
-        getIPFromList(root, currentNodes).setVisited(true);
+        listIP(root, currentNodes).setVisited(true);
         IP current;
         //main loop
         while (!queue.isEmpty()) {
@@ -96,6 +118,15 @@ public final class NetworkUtil {
         return output;
     }
 
+    /**
+     * gets a list of ips representing the route from start node to end node. This method uses an implementation of BFS.
+     *
+     * @param start start node of route
+     * @param end end node of route
+     * @param nodes List of nodes (the 'tree')
+     * @return list containing all nodes on root in correct order (nodes are deep copied nodes equal to the nodes in
+     *          network)
+     */
     public static List<IP> getRoute(IP start, IP end, List<IP> nodes) {
         for (IP node : nodes) {
             node.setParent(null);
@@ -104,7 +135,7 @@ public final class NetworkUtil {
         //implement queue
         Queue<IP> queue = new LinkedList<>();
         List<IP> route = new LinkedList<>();
-        IP root = getIPFromList(start, List.copyOf(nodes));
+        IP root = listIP(start, List.copyOf(nodes));
         queue.add(root);
         root.setVisited(true);
         IP current = root;
@@ -138,10 +169,23 @@ public final class NetworkUtil {
         return NetworkUtil.deepCopy(route);
     }
 
-    public static IP getIPFromList(IP ip, List<IP> list) {
-        return list.get(list.indexOf(ip));
+    /**
+     * method to get a node equal to given given from nodes
+     *
+     * @param ip node to be found and returned
+     * @param nodes list of existing nodes
+     * @return the node equal to ip but contained in nodes
+     */
+    public static IP listIP(IP ip, List<IP> nodes) {
+        return nodes.get(nodes.indexOf(ip));
     }
 
+    /**
+     * provides a deep copy of a list of nodes also deep copying every element of the list
+     *
+     * @param nodes list of nodes to be copied
+     * @return deep copy of nodes
+     */
     public static List<IP> deepCopy(Collection<IP> nodes) {
         List<IP> nodesCopy = new LinkedList<>();
         for (IP node : nodes) {
@@ -157,12 +201,12 @@ public final class NetworkUtil {
         for (IP node : nodes) {
             if (nodesCopy.contains(node)) {
                 //making sure to reference clone in List
-                IP nodeClone = getIPFromList(node, nodesCopy);
+                IP nodeClone = listIP(node, nodesCopy);
                 IP adjNodeClone;
                 //iterating over original node's adjacency list to provide copy as adjacency list to clones
                 for (IP adjacentNode : node.getAdjacentNodes()) {
                     if (nodesCopy.contains(adjacentNode)) {
-                        adjNodeClone = getIPFromList(adjacentNode, nodesCopy);
+                        adjNodeClone = listIP(adjacentNode, nodesCopy);
                         nodeClone.addAdjacentNode(adjNodeClone);
                         adjNodeClone.addAdjacentNode(nodeClone);
                     }

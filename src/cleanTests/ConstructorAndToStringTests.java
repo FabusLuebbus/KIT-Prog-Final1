@@ -138,5 +138,11 @@ public class ConstructorAndToStringTests {
     public void leadingWhitespaceTest() throws ParseException {
         Network network = new Network(" (1.1.1.1 2.2.2.2)");
     }
-    
+
+    @Test
+    public void getRouteTest() throws ParseException {
+        Network network = new Network("(1.1.1.1 (2.2.2.2 3.3.3.3) 4.4.4.4)");
+        network.disconnect(new IP("1.1.1.1"), new IP("2.2.2.2"));
+        System.out.println(network.getRoute(new IP("1.1.1.1"), new IP("4.4.4.4")));
+    }
 }
