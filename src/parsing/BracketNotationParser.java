@@ -32,7 +32,6 @@ public class BracketNotationParser {
     private final List<IP> roots = new LinkedList<>();
     private final List<IP> nodes = new LinkedList<>();
     private final Set<String> addedIPs = new HashSet<>();
-    private boolean firstTime = true;
 
     /**
      * getter method for product of parsing bracketNotation
@@ -96,7 +95,7 @@ public class BracketNotationParser {
         }
         //replacing '(' with '( ' and ')' with ' )' so brackets will be independent tokens as well as IPs
         String editedBracketNotation = bracketNotation.replace("(", "( ").replace(")", " )");
-        //setting up Streamtokenizer and its syntax
+        //setting up Streamtokenizer and it's syntax
         Reader reader = new StringReader(editedBracketNotation);
         tokenizer = new StreamTokenizer(reader);
         tokenizer.resetSyntax();
