@@ -1,22 +1,22 @@
-# 🌐 Network Representation System
+# 🌐 NetParser: Network Bracket Notation Parser
 
-This Java project implements a system for representing and manipulating computer networks using IP addresses. It was developed as a programming final task at KIT
+This Java project implements a system for parsing, representing, and manipulating computer networks using IP addresses and a custom bracket notation. It was developed as a programming final task at KIT.
 
 ## 📋 Overview
 
-The system models computer networks as undirected graphs where:
+NetParser focuses on parsing and generating bracket notation for network structures. The system models computer networks as undirected graphs where:
 - Nodes represent computers with IP addresses
 - Edges represent connections between computers
 - Networks must maintain a valid tree topology
 
 ## ✨ Key Features
 
+- Parse and generate bracket notation for network representation
 - Create and manipulate network structures
 - Add subnets to existing networks
 - Connect and disconnect nodes
 - Find routes between nodes
 - Calculate network heights and levels
-- Parse and generate bracket notation for network representation
 
 ## 🧩 Core Components
 
@@ -36,7 +36,7 @@ The system models computer networks as undirected graphs where:
   - Calculating network height and levels
 
 ### 📝 Bracket Notation
-The system uses a custom bracket notation to represent network structures:
+The central feature of NetParser is its custom bracket notation to represent network structures:
 ```
 (root child1 child2 (subroot subchild1 subchild2))
 ```
@@ -48,6 +48,8 @@ Example: `(141.255.1.133 0.146.197.108 122.117.67.158)` represents a network wit
 ### 🔄 Parser and Printer
 - `BracketNotationParser`: Converts bracket notation strings to network structures
 - `BracketNotationPrinter`: Converts network structures to bracket notation strings
+
+These components form the core of NetParser, enabling seamless conversion between textual representation and functional network objects.
 
 ## 💻 Usage Example
 
